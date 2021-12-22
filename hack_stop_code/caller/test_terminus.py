@@ -124,3 +124,13 @@ def test_none_authentication(auth_type: str):
     }
     with pytest.raises(ValueError):
         Parser(params=params, args=args)
+
+
+def test_none_authentication_missing_format():
+    args = {}
+    params = {
+        Constants.auth_format: '',
+        Constants.authentication_type: Constants.auth_custom,
+    }
+    with pytest.raises(ValueError):
+        Parser(params=params, args=args)
