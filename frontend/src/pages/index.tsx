@@ -6,21 +6,20 @@ import {
   Grid,
   makeStyles,
   Typography,
-  Collapse,
-  MenuItem,
-  Select,
+
 
 } from '@material-ui/core';
 import { Field, FieldArray, Form, Formik } from 'formik';
 import { CheckboxWithLabel, TextField } from 'formik-material-ui';
 import React, { Children, Component } from 'react';
-import { array, boolean, number, object, string, ValidationError } from 'yup';
 
 import { Integartion } from '../schema/integration';
 import { Command } from '../schema/command';
 import { Param } from '../schema/param';
-import { Menu, TurnedInTwoTone } from '@material-ui/icons';
 import axios from 'axios';
+import YAML from 'yaml'
+import fileDownload from 'js-file-download'
+
 
 
 
@@ -28,7 +27,7 @@ const emptyParam: Param =
 {
   "key": "",
   "value": "",
-  "required": true,
+  "required": false,
   "hidden": false,
 }
 
@@ -51,14 +50,6 @@ const initialValues: Integartion = {
   },
   commands: [emptyCommand]
 };
-
-const methodOptions = [
-  "GET",
-  "POST",
-  "UPDATE",
-  "PATCH",
-  "DELETE"
-]
 
 
 const useStyles = makeStyles((theme) => ({
@@ -268,7 +259,7 @@ export default function Home() {
                                 <option value="GET">GET</option>
                                 <option value="POST">POST</option>
                                 <option value="DELETE">DELETE</option>
-                                <option value="UPDATE">UPDATE</option>
+                                <option value="PUT">PUT</option>
                                 <option value="PATCH">PATCH</option>
 
                               </Field>
@@ -371,7 +362,7 @@ export default function Home() {
                               )}
                             </FieldArray>
 
-                            <FieldArray name={`commands[${index}].headers`}>
+                            <FieldArray name={`commands.[${index}].headers`}>
                               {({ push, remove }) => (
                                 <React.Fragment>
                                   <Grid item>
@@ -380,7 +371,7 @@ export default function Home() {
                                     </Typography>
                                   </Grid>
 
-                                  {values.commands[index].params.map((_, command_header_index) => (
+                                  {values.commands[index].headers.map((_, command_header_index) => (
                                     <Grid
                                       container
                                       item
@@ -392,7 +383,7 @@ export default function Home() {
                                         <Grid item xs={12} sm={6}>
                                           <Field
                                             fullwidth="true"
-                                            name={`commands.[${index}].params.[${command_header_index}].key`}
+                                            name={`commands.[${index}].headers.[${command_header_index}].key`}
                                             component={TextField}
                                             label="Param key"
                                           />
@@ -400,7 +391,7 @@ export default function Home() {
                                         <Grid item xs={12} sm={6}>
                                           <Field
                                             fullwidth="true"
-                                            name={`commands.[${index}].params.[${command_header_index}].value`}
+                                            name={`commands.[${index}].headers.[${command_header_index}].value`}
                                             component={TextField}
                                             label="Param value"
                                           />
@@ -494,6 +485,14 @@ export default function Home() {
 }
 
 const postData = (values: any) => {
-  axios.post("http://localhost:8000/", values).then((res: any) => {console.log(res)})
+  axios.post("http://localhost:8000/", values).then((res: any) => {
+    console.log(res.data)
+    const doc = new YAML.Document();
+    doc.contents = res.data;
+    fileDownload(doc.toString(), 'integration.yml');
+
+
+
+  })
 }
 
