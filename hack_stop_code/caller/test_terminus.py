@@ -4,7 +4,7 @@ import pytest
 
 import demistomock as demisto
 from Parser import (DEFAULT_POST_PROCESS, DEFAULT_PRE_PROCESS,
-                    AuthenticationType, ParsedArguments, Parser, Prefixes)
+                    ParsedArguments, Parser, Prefixes)
 from hack_stop_code.caller.runner import Runner
 from utils import Constants
 
@@ -112,7 +112,6 @@ class TestParser:
         params = {Constants.authentication_type: Constants.auth_none}
         p = Parser(params=params, args=args)
         assert p.headers == {}
-        assert p.authentication_type == AuthenticationType.NoAuth
 
     @pytest.mark.parametrize('auth_type', (Constants.auth_none, Constants.auth_basic, Constants.auth_bearer))
     def test_empty_custom_raises(self, auth_type: str):

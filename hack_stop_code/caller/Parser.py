@@ -70,11 +70,12 @@ class Parser:
         auth_format = self._params.get(Constants.auth_format)
         authentication_type = self._parse_authentication_type(self._params)
 
-        if authentication_type == AuthenticationType.NoAuth:
-            return dict()
 
         if auth_format and authentication_type != AuthenticationType.Custom:
             raise ValueError(f"Cannot have auth format with a non-custom authentication type {authentication_type}")
+
+        if authentication_type == AuthenticationType.NoAuth:
+            return dict()
 
         username = self._params.get('credentials', {}).get('username', '')
         password = self._params.get('credentials', {}).get('password', '')
