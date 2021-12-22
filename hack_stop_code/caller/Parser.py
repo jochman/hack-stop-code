@@ -143,16 +143,3 @@ class Parser:
                        for k, v in data.items()
                        if k.startswith(f'{Prefixes.header}:')})
         return result
-
-
-'''
-param auth_type
- bearer (credentials.password)
- basic  (credentials.username, credentials.password)
- oauth2 (fields that look like authentication:app_id, authentication:app_secret,...) 
- 
-param auth_format supporting <username, password>
- supporting 
-     <username>:<password>
-     <username>_@@@_<password>
-'''
