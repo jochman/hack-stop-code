@@ -16,13 +16,13 @@ export default function MyApp({ Component, pageProps }: AppProps) {
   return (
     <React.Fragment>
       <Head>
-        <title>Field Array Formik</title>
+        <title>Create Integration</title>
         <meta name="viewport" content="minimum-scale=1, initial-scale=1, width=device-width" />
       </Head>
       <ThemeProvider theme={theme}>
         <AppBar position="fixed">
           <Toolbar variant="dense">
-            <Typography variant="h6">Field Array Formik</Typography>
+            <Typography variant="h6">Create Integration</Typography>
           </Toolbar>
         </AppBar>
 
