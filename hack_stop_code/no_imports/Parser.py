@@ -1,12 +1,35 @@
 from enum import Enum, auto
-from pathlib import Path
 from typing import NamedTuple
 
-from hack_stop_code.caller.CommonServerPython import argToBoolean
 from hack_stop_code.caller.utils import Constants
 
-DEFAULT_POST_PROCESS = Path('post_process.py').read_text()
-DEFAULT_PRE_PROCESS = Path('pre_process.py').read_text()
+DEFAULT_POST_PROCESS = '''import requests
+
+import demistomock as demisto
+from CommonServerPython import CommandResults
+
+
+class PostProcess:
+    @staticmethod
+    def post_process(response: requests.Response) -> CommandResults:
+        # manipulate json if necessary, just make sure to return CommandResults
+        json = response.json()
+        return CommandResults(outputs_prefix=f'demo/{demisto.command()}',
+                              outputs=json,
+                              raw_response=json)
+'''
+DEFAULT_PRE_PROCESS = '''from hack_stop_code.caller.Parser import ParsedArguments
+
+
+class PreProcess:
+    def __init__(self, args: ParsedArguments) -> None:
+        self._args = args
+
+    def get_preprocessed_args(self):
+        # If necessary, change self._args
+        # (the ParsedArguments object is immutable, but its members are mutable)
+        return self._args
+'''
 
 
 class Prefixes:
@@ -15,7 +38,7 @@ class Prefixes:
     body_arg = '_body_arg'
     custom_arg = '_custom_arg'
     path_param = '_path_param'
-    request_arg = '_request_arg'
+    request_arg = '_request_arg'  # todo jochman
 
     header = '_header'
     authorization = 'authorization'
@@ -44,7 +67,7 @@ class Parser:
         self._args = args
 
         self.base_url = params.get(Constants.base_url)
-        self.insecure = argToBoolean(params.get(Constants.insecure, False))
+        self.insecure = params.get(Constants.insecure, False)  # todo argtobool
         self.proxy = params.get(Constants.proxy, False)
 
         self.method = args.get(Constants.method)
@@ -70,6 +93,7 @@ class Parser:
     def generate_auth_header(self):
         auth_format = self._params.get(Constants.auth_format)
         authentication_type = self._parse_authentication_type(self._params)
+
 
         if auth_format and authentication_type != AuthenticationType.Custom:
             raise ValueError(f"Cannot have auth format with a non-custom authentication type {authentication_type}")
@@ -111,9 +135,9 @@ class Parser:
         return string_to_type[raw_authentication_type]
 
     def _parse_replace_suffix(self, args):  # call after calling parse_special_args()
-        suffix = args.get(Constants.suffix, '')
+        suffix = args.get(Constants.suffix)
         for k, v in self._parsed_arguments.path_args.items():
-            suffix = suffix.replace(f':{k}', v)
+            suffix = suffix.replace(f'<{k}>', v)
         return suffix
 
     @staticmethod

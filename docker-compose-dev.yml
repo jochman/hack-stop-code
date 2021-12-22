@@ -1,9 +1,13 @@
 version: '3.9'
 services:
-  # frontend:
-  #   build: 
-  #     context: frontend
-  #     dockerfile: Dockerfile
+  frontend:
+    build: 
+      context: frontend
+      dockerfile: Dockerfile.dev
+    volumes:
+      - ./frontend:/app
+    ports:
+      - 3000:3000
   service-to-yml:
     build:
       context: service-to-yml
@@ -12,3 +16,9 @@ services:
       - 8000:80
     volumes:
       - ./service-to-yml/service_to_yml:/app
+      - /app/node_modules
+
+    networks:
+      default:
+        aliases:
+          - service-to-yml

@@ -1,79 +1,346 @@
-category: Data Enrichment & Threat Intelligence
 commonfields:
-  id: ipinfo_v2
+  id: ipinfo_v5
   version: -1
-configuration:
-  - name: credentials
-    display: API token
-    additionalinfo: The API key to use for the connection.
-    hiddenusername: true
-    displaypassword: API Token
-    required: false
-    type: 9
-  - name: integrationReliability
-    additionalinfo: Reliability of the source providing the intelligence data.
-    defaultvalue: C - Fairly reliable
-    display: Source Reliability
-    options:
-      - A+ - 3rd party enrichment
-      - A - Completely reliable
-      - B - Usually reliable
-      - C - Fairly reliable
-      - D - Not usually reliable
-      - E - Unreliable
-      - F - Reliability cannot be judged
-    required: true
-    type: 15
-  - name: base_url
-    defaultvalue: https://ipinfo.io
-    display: Base URL
-    hidden: false
-    required: true
-    type: 0
-  - name: insecure
-    display: Trust any certificate (not secure)
-    required: false
-    type: 8
-  - name: _authentication_type
-    display: Authentication type
-    required: true
-    type: 15
-    options:
-      - Basic
-      - Bearer
-      - Oauth2
-  - display: Use system proxy settings
-    name: proxy
-    required: false
-    type: 8
+vcShouldKeepItemLegacyProdMachine: false
+name: ipinfo_v5
+display: IPinfo v5
+category: Data Enrichment & Threat Intelligence
 description: Use the IPinfo.io API to get data about an IP address.
-display: IPinfo v2
-name: ipinfo_v2
+configuration:
+- display: API token
+  displaypassword: API Token
+  name: credentials
+  type: 9
+  required: false
+  hiddenusername: true
+  additionalinfo: The API key to use for the connection.
+- display: Source Reliability
+  name: integrationReliability
+  defaultvalue: C - Fairly reliable
+  type: 15
+  required: true
+  options:
+  - A+ - 3rd party enrichment
+  - A - Completely reliable
+  - B - Usually reliable
+  - C - Fairly reliable
+  - D - Not usually reliable
+  - E - Unreliable
+  - F - Reliability cannot be judged
+  additionalinfo: Reliability of the source providing the intelligence data.
+- display: Base URL
+  name: base_url
+  defaultvalue: https://ipinfo.io
+  type: 0
+  required: true
+- display: Base URL
+  name: _headers:header1
+  defaultvalue: example1
+  type: 0
+  required: false
+  hidden: true
+- display: Trust any certificate (not secure)
+  name: insecure
+  type: 8
+  required: false
+- display: Authentication type
+  name: _authentication_type
+  type: 15
+  required: true
+  options:
+  - Basic
+  - Bearer
+  - None
+- display: Use system proxy settings
+  name: proxy
+  type: 8
+  required: false
 script:
-  commands:
-    - arguments:
-        - default: true
-          description: IP address to query, e.g., 1.1.1.1.
-          isArray: false
-          name: ip
-          required: true
-          secret: false
-      deprecated: false
-      description: Check IP reputation (when information is available, returns a JSON
-        with details). Uses all configured Threat Intelligence feeds.
-      execution: false
-      name: ip
-      preprocess: null
-      postprocess: null
-  dockerimage: demisto/python3:3.9.7.24076
-  feed: false
-  isfetch: false
-  longRunning: false
-  longRunningPort: false
-  runonce: false
-  script: '-'
-  subtype: python3
+  script: |-
+    from pathlib import Path
+
+    from typing import Union
+
+
+    class Constants:
+        body = 'body'
+        auth_custom = 'auth_custom'
+        auth_format = 'auth_format'
+        authentication_type = '_auth_type'
+        auth_header_key = 'Authorization'
+        password_placeholder = '<password>'
+        username_placeholder = '<username>'
+        auth_bearer = 'Bearer'
+        auth_basic = 'Basic'
+        auth_none = 'None'
+        context_key = 'context_key'
+        method = 'method'
+        suffix = 'suffix'
+        post_process = '_post_process'
+        pre_process = '_pre_process'
+        base_url = 'base_url'
+        insecure = 'insecure'
+        proxy = 'proxy'
+
+
+    def load_json(path: Union[str, Path]):
+        with Path(path).open() as f:
+            return load_json(f)
+
+
+
+    from enum import Enum, auto
+
+    from typing import NamedTuple
+
+
+    DEFAULT_POST_PROCESS = '''import requests
+
+
+    class PostProcess:
+        @staticmethod
+        def post_process(response: requests.Response) -> CommandResults:
+            # manipulate json if necessary, just make sure to return CommandResults
+            json = response.json()
+            return CommandResults(outputs_prefix=f'demo/{demisto.command()}',
+                                  outputs=json,
+                                  raw_response=json)
+    '''
+    DEFAULT_PRE_PROCESS = '''
+
+    class PreProcess:
+        def __init__(self, args: ParsedArguments) -> None:
+            self._args = args
+
+        def get_preprocessed_args(self):
+            # If necessary, change self._args
+            # (the ParsedArguments object is immutable, but its members are mutable)
+            return self._args
+    '''
+
+
+    class Prefixes:
+        bearer = 'bearer'
+
+        body_arg = '_body_arg'
+        custom_arg = '_custom_arg'
+        path_param = '_path_param'
+        request_arg = '_request_arg'  # todo jochman
+
+        header = '_header'
+        authorization = 'authorization'
+        configuration = 'configuration'
+        pre_process = 'preprocess'
+        post_process = 'preprocess'
+
+
+    class ParsedArguments(NamedTuple):
+        path_args: dict
+        custom_args: dict
+        request_args: dict
+        body_args: dict
+
+
+    class AuthenticationType(Enum):
+        Basic = auto()
+        Bearer = auto()
+        Custom = auto()
+        NoAuth = auto()
+
+
+    class Parser:
+        def __init__(self, params: dict, args: dict):
+            self._params = params
+            self._args = args
+
+            self.base_url = params.get(Constants.base_url)
+            self.insecure = params.get(Constants.insecure, False)  # todo argtobool
+            self.proxy = params.get(Constants.proxy, False)
+
+            self.method = args.get(Constants.method)
+            self.body = args.get(Constants.body)
+            self.context_key = args.get(Constants.context_key)
+            self._parsed_arguments = self.parse_special_args(args)
+
+            self.headers = Parser._extract_headers(args) | Parser._extract_headers(params) | self.generate_auth_header()
+            self.suffix = self._parse_replace_suffix(args)
+
+            # todo pass token as url path param
+            self._pre_process_code = args.get(Constants.pre_process) or DEFAULT_PRE_PROCESS
+            self._post_process_code = args.get(Constants.post_process) or DEFAULT_POST_PROCESS
+
+            exec(self._pre_process_code, globals())  # imports the customized PreProcess class
+            exec(self._post_process_code, globals())  # imports the customized PostProcess class
+
+            # noinspection PyUnresolvedReferences
+            self.pre_processor = PreProcess(self._parsed_arguments)
+            # noinspection PyUnresolvedReferences
+            self.post_processor = PostProcess()
+
+        def generate_auth_header(self):
+            auth_format = self._params.get(Constants.auth_format)
+            authentication_type = self._parse_authentication_type(self._params)
+
+
+            if auth_format and authentication_type != AuthenticationType.Custom:
+                raise ValueError(f"Cannot have auth format with a non-custom authentication type {authentication_type}")
+
+            if authentication_type == AuthenticationType.NoAuth:
+                return dict()
+
+            username = self._params.get('credentials', {}).get('username', '')
+            password = self._params.get('credentials', {}).get('password', '')
+
+            auth_type_to_auth_format = {
+                AuthenticationType.Basic: f'Basic {Constants.username_placeholder}:{Constants.password_placeholder}',
+                AuthenticationType.Bearer: f'Bearer {Constants.password_placeholder}',
+                AuthenticationType.Custom: auth_format
+            }
+            try:
+                auth_format = auth_type_to_auth_format[authentication_type]
+            except KeyError:
+                raise ValueError(f"Unexpected auth type={authentication_type}")
+
+            if not auth_format:
+                raise ValueError(f"Empty auth_format, auth type={authentication_type}")
+
+            auth_header_value = auth_format \
+                .replace(Constants.password_placeholder, password) \
+                .replace(Constants.username_placeholder, username)
+
+            return {Constants.auth_header_key: auth_header_value}
+
+        @staticmethod
+        def _parse_authentication_type(params: dict):
+            raw_authentication_type = params.get(Constants.authentication_type, Constants.auth_none)
+
+            string_to_type = {Constants.auth_basic: AuthenticationType.Basic,
+                              Constants.auth_bearer: AuthenticationType.Bearer,
+                              Constants.auth_none: AuthenticationType.NoAuth,
+                              Constants.auth_custom: AuthenticationType.Custom}
+
+            return string_to_type[raw_authentication_type]
+
+        def _parse_replace_suffix(self, args):  # call after calling parse_special_args()
+            suffix = args.get(Constants.suffix)
+            for k, v in self._parsed_arguments.path_args.items():
+                suffix = suffix.replace(f'<{k}>', v)
+            return suffix
+
+        @staticmethod
+        def parse_special_args(args):
+            path_params = {}
+            custom_args = {}
+            request_args = {}
+            body_args = {}
+
+            prefix_to_dict = {
+                f'{Prefixes.path_param}:': path_params,
+                f'{Prefixes.custom_arg}:': custom_args,
+                f'{Prefixes.request_arg}:': request_args,
+                f'{Prefixes.body_arg}:': body_args
+            }
+
+            for k, v in args.items():
+                for prefix, destination in prefix_to_dict.items():
+                    if k.startswith(prefix):
+                        destination[k.removeprefix(prefix)] = v
+                        break
+
+            return ParsedArguments(path_args=path_params, custom_args=custom_args,
+                                   request_args=request_args, body_args=body_args)
+
+        @staticmethod
+        def _extract_headers(data: dict):
+            result = dict()
+            result.update({k.removeprefix(f'{Prefixes.header}:'): v
+                           for k, v in data.items()
+                           if k.startswith(f'{Prefixes.header}:')})
+            return result
+
+
+    class PreProcess:
+        def __init__(self, args: ParsedArguments) -> None:
+            self._args = args
+
+        def get_preprocessed_args(self):
+            # If necessary, change self._args
+            # (the ParsedArguments object is immutable, but its members are mutable)
+            return self._args
+    class ApiCall:
+        @staticmethod
+        def __call__(method: str,
+                     url: str = None,
+                     headers=None,
+                     data=None,
+                     verify: bool = True,
+                     proxy: bool = False,
+                     **kwargs) -> requests.Response:
+            return requests.request(method=method, url=url, data=data, headers=headers)
+
+
+    import requests
+
+
+    class PostProcess:
+        @staticmethod
+        def post_process(response: requests.Response) -> CommandResults:
+            # manipulate json if necessary, just make sure to return CommandResults
+            json = response.json()
+            return CommandResults(outputs_prefix=f'demo/{demisto.command()}',
+                                  outputs=json,
+                                  raw_response=json)
+
+    from urllib.parse import urljoin
+
+
+    class Runner:
+        def __init__(self):
+            self.parser = Parser(params=demisto.params(), args=demisto.args())
+
+        def run(self):
+            args = self.parser.pre_processor.get_preprocessed_args()
+
+            raw_response = ApiCall()(
+                method=self.parser.method,
+                url=urljoin(self.parser.base_url, self.parser.suffix),
+                headers=self.parser.headers,
+                data=self.parser.body,
+                verify=not self.parser.insecure,
+                proxy=self.parser.proxy,
+                params=args.request_args
+            )
+            return self.parser.post_processor.post_process(raw_response)
+
+
+    runner = Runner()
+    results = runner.run()
+    return_results(results)
+
   type: python
-tests:
-  - IPInfo_v2Test
-fromversion: 5.5.0
+  commands:
+  - name: ip
+    arguments:
+    - name: _path_param:ip
+      required: true
+      default: true
+      description: IP address to query, e.g., 1.1.1.1.
+    - name: _request_param:foo
+      description: example request arg
+    - name: suffix
+      required: true
+      description: suffix
+      defaultValue: <ip>
+    - name: header:Accept
+      required: true
+      description: accept json
+      defaultValue: application/json
+    - name: method
+      required: true
+      description: http method
+      defaultValue: GET
+    description: Check IP reputation (when information is available, returns a JSON
+      with details). Uses all configured Threat Intelligence feeds.
+  dockerimage: demisto/python3:3.9.7.24076
+  runonce: false
+  subtype: python3
