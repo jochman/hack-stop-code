@@ -1,3 +1,4 @@
+from enum import Enum, auto
 from pathlib import Path
 from typing import NamedTuple
 
@@ -8,6 +9,7 @@ DEFAULT_PRE_PROCESS = Path('pre_process.py').read_text()
 
 
 class Prefixes:
+    bearer = 'bearer'
     body_arg = '_body_arg'
     custom_arg = '_custom_arg'
     url_arg = '_url_arg'
@@ -26,31 +28,68 @@ class CommandArguments(NamedTuple):
     body_args: dict
 
 
+class AuthenticationType(Enum):
+    Basic = auto()
+    Bearer = auto()
+    Custom = auto()
+    NoAuth = auto()
+
+
 class Parser:
-    @staticmethod
-    def _parse_authorization(s: str):
-        return s.removeprefix(f"{Prefixes.authorization}:")
-
-    @staticmethod
-    def _parse_header(s: str):
-        s = s.removeprefix(f'{Prefixes.header}:')
-
-        if s.startswith(Prefixes.authorization):
-            return Parser._parse_authorization(s)
-
-        # todo other auth types
-
     def __init__(self, params: dict, args: dict):
+        self._params = params
+        self._args = args
+
         self.method = args.get(Constants.method)
         self.context_key = args.get(Constants.context_key)
         self.parsed_arguments = self.parse_special_args(args)
-        self.headers = Parser._extract_headers(args) | Parser._extract_headers(params)
-        self.suffix = self._parse_replace_suffix(args)
 
+        self.auth_format = params.get('auth_format')
+        self.authentication_type = self._parse_authentication_type(params)
+
+        self.headers = Parser._extract_headers(args) | Parser._extract_headers(params) | self.generate_auth_header()
+        self.suffix = self._parse_replace_suffix(args)
+        # todo pass token as url path param
         self._pre_process_code = args.get(Constants.pre_process) or DEFAULT_PRE_PROCESS
         self._post_process_code = args.get(Constants.post_process) or DEFAULT_POST_PROCESS
         self.pre_process_result = exec(self._pre_process_code, globals())
         self.post_process_result = exec(self._post_process_code, globals())
+
+    def generate_auth_header(self):
+        auth_format = self.auth_format
+
+        username = self._params.get('credentials', {}).get('username', '')
+        password = self._params.get('credentials', {}).get('password', '')
+
+        if self.authentication_type == AuthenticationType.NoAuth:
+            return dict()
+
+        elif self.authentication_type == AuthenticationType.Basic:
+            auth_format = auth_format or f'Basic {Constants.username_placeholder}:{Constants.password_placeholder}'
+
+        elif self.authentication_type == AuthenticationType.Bearer:
+            auth_format = auth_format or f'Bearer {Constants.password_placeholder}'
+
+        elif self.authentication_type == AuthenticationType.Custom:
+            pass  # uses auth_format
+
+        if not auth_format:
+            raise ValueError(f"Empty auth_format, auth type={self.authentication_type}")
+
+        auth_header_value = auth_format \
+            .replace(Constants.password_placeholder, password) \
+            .replace(Constants.username_placeholder, username)
+
+        return {Constants.auth_header_key: auth_header_value}
+
+    @staticmethod
+    def _parse_authentication_type(params: dict):
+        raw_authentication_type = params.get(Constants.authentication_type, Constants.auth_none)
+
+        string_to_type = {Constants.auth_basic: AuthenticationType.Basic,
+                          Constants.auth_bearer: AuthenticationType.Bearer,
+                          Constants.auth_none: AuthenticationType.NoAuth}
+        return string_to_type.get(raw_authentication_type)
 
     def _parse_replace_suffix(self, args):  # call after calling parse_special_args()
         suffix = args.get(Constants.suffix)
@@ -66,10 +105,12 @@ class Parser:
         request_args = {}
         body_args = {}
 
-        prefix_to_dict = {f'{Prefixes.url_arg}:': url_args,
-                          f'{Prefixes.custom_arg}:': custom_args,
-                          f'{Prefixes.request_arg}:': request_args,
-                          f'{Prefixes.body_arg}:': body_args}
+        prefix_to_dict = {
+            f'{Prefixes.url_arg}:': url_args,
+            f'{Prefixes.custom_arg}:': custom_args,
+            f'{Prefixes.request_arg}:': request_args,
+            f'{Prefixes.body_arg}:': body_args
+        }
 
         for k, v in args.items():
             for prefix, destination in prefix_to_dict.items():
@@ -82,6 +123,21 @@ class Parser:
 
     @staticmethod
     def _extract_headers(data: dict):
-        return {Parser._parse_header(k): v
-                for k, v in data.items()
-                if k.startswith(f'{Prefixes.header}:')}
+        result = dict()
+        result.update({k.removeprefix(f'{Prefixes.header}:'): v
+                       for k, v in data.items()
+                       if k.startswith(f'{Prefixes.header}:')})
+        return result
+
+
+'''
+param auth_type
+ bearer (credentials.password)
+ basic  (credentials.username, credentials.password)
+ oauth2 (fields that look like authentication:app_id, authentication:app_secret,...) 
+ 
+param auth format supporting <username, password>
+ supporting 
+     username:password
+     username__password
+'''

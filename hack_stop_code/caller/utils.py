@@ -1,4 +1,11 @@
 class Constants:
+    auth_header_key = 'Authorization'
+    password_placeholder = '<password>'
+    username_placeholder = '<username>'
+    auth_bearer = 'Bearer'
+    auth_basic = 'Basic'
+    auth_none = 'None'
+    authentication_type = '_authentication_type'
     context_key = 'context_key'
     method = 'method'
     suffix = 'suffix'

@@ -3,7 +3,7 @@ commonfields:
   id: ipinfo_v2
   version: -1
 configuration:
-  - name: 'header:authorization:Bearer'
+  - name: credentials
     display: API token
     additionalinfo: The API key to use for the connection.
     hiddenusername: true
@@ -34,6 +34,14 @@ configuration:
     display: Trust any certificate (not secure)
     required: false
     type: 8
+  - name: _authentication_type
+    display: Authentication type
+    required: true
+    type: 15
+    options:
+      - Basic
+      - Bearer
+      - Oauth2
   - display: Use system proxy settings
     name: proxy
     required: false

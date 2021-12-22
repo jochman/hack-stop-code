@@ -18,13 +18,14 @@ def test_sanity():
     }
     params = {
         'base_url': 'ipinfo.io',
-        'header:authorization:bearer': 'my_secret_key',
-        'context_key': 'ipinfo.ip'
+        'context_key': 'ipinfo.ip',
+        'credentials': {'password': 'my_secret_key'},
+        Constants.authentication_type: Constants.auth_bearer
     }
     p = Parser(params=params, args=args)
     assert p.suffix == 'ip'
     assert p.method == 'GET'
-    assert p.headers == {'bearer': 'my_secret_key'}
+    assert p.headers == {'Authorization': 'Bearer my_secret_key'}
     expected_url_args = {'url_arg_1': 'url_arg_value_1'}
     expected_custom_args = {'custom_arg_1': 'custom_arg_value_1'}
     expected_body_args = {'body_arg_1': 'body_arg_value_1'}
