@@ -11,6 +11,6 @@ class Argument(BaseModel):
     auto: Optional[bool]
     predefined: list[str] = []
     isArray: bool = False
-    defaultValue: str = ''
+    defaultValue: Optional[str] = ''
     secret: bool = False
     deprecated: bool = False

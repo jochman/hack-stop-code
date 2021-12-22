@@ -22,7 +22,7 @@ export default function MyApp({ Component, pageProps }: AppProps) {
       <ThemeProvider theme={theme}>
         <AppBar position="fixed">
           <Toolbar variant="dense">
-            <Typography variant="h6">Create Integration</Typography>
+            <Typography variant="h6" align="center">Cortex XSOAR Integration Generator</Typography>
           </Toolbar>
         </AppBar>
 
