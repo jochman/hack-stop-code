@@ -87,6 +87,9 @@ class Parser:
         except KeyError:
             raise ValueError(f"Empty auth_format, auth type={self.authentication_type}")
 
+        if not auth_format:
+            raise ValueError(f"Empty auth_format, auth type={self.authentication_type}")
+
         auth_header_value = auth_format \
             .replace(Constants.password_placeholder, password) \
             .replace(Constants.username_placeholder, username)
