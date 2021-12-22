@@ -85,7 +85,7 @@ class Parser:
                 AuthenticationType.Custom: self.auth_format
             }[self.authentication_type]
         except KeyError:
-            raise ValueError(f"Empty auth_format, auth type={self.authentication_type}")
+            raise ValueError(f"Unexpected auth type={self.authentication_type}")
 
         if not auth_format:
             raise ValueError(f"Empty auth_format, auth type={self.authentication_type}")
