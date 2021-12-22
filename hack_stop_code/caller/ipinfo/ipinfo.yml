@@ -78,6 +78,13 @@ script:
           defaultValue: <ip>
           secret: false
         - default: false
+          description: accept json
+          isArray: false
+          name: header:Accept
+          required: true
+          defaultValue: application/json
+          secret: false
+        - default: false
           description: http method
           isArray: false
           name: method
