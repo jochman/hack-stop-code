@@ -2,6 +2,7 @@ from enum import Enum, auto
 from pathlib import Path
 from typing import NamedTuple
 
+from hack_stop_code.caller.CommonServerPython import argToBoolean
 from hack_stop_code.caller.utils import Constants
 
 DEFAULT_POST_PROCESS = Path('post_process.py').read_text()
@@ -43,7 +44,7 @@ class Parser:
         self._args = args
 
         self.base_url = params.get(Constants.base_url)
-        self.insecure = params.get(Constants.insecure, False)  # todo argtobool
+        self.insecure = argToBoolean(params.get(Constants.insecure, False))
         self.proxy = params.get(Constants.proxy, False)
 
         self.method = args.get(Constants.method)
@@ -113,7 +114,7 @@ class Parser:
     def _parse_replace_suffix(self, args):  # call after calling parse_special_args()
         suffix = args.get(Constants.suffix, '')
         for k, v in self._parsed_arguments.path_args.items():
-            suffix = suffix.replace(f'<{k}>', v)
+            suffix = suffix.replace(f':{k}', v)
         return suffix
 
     @staticmethod

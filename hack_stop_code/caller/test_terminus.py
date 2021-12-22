@@ -16,7 +16,7 @@ class TestParser:
             Constants.pre_process: None,
             Constants.post_process: None,
             Constants.method: 'GET',
-            Constants.suffix: '<ip>',
+            Constants.suffix: ':ip',
             Constants.context_key: 'context_key',
             f'{Prefixes.header}:accept': 'json/application',
             f'{Prefixes.body_arg}:body_arg_1': 'body_arg_value_1',
@@ -31,7 +31,7 @@ class TestParser:
             Constants.authentication_type: Constants.auth_bearer,
         }
         p = Parser(params=params, args=args)
-        assert p.suffix == '<ip>'
+        assert p.suffix == ':ip'
         assert p.method == 'GET'
         assert p.headers == {Constants.auth_header_key: 'Bearer my_secret_key', 'accept': 'json/application'}
         expected_url_args = {'url_arg_1': 'url_arg_value_1'}
@@ -63,7 +63,7 @@ class TestParser:
             Constants.pre_process: None,
             Constants.post_process: None,
             Constants.method: 'GET',
-            Constants.suffix: '<ip>',
+            Constants.suffix: ':ip',
             Constants.context_key: 'context_key',
             f'{Prefixes.header}:accept': 'json/application',
             f'{Prefixes.body_arg}:body_arg_1': 'body_arg_value_1',
@@ -152,7 +152,7 @@ class TestAll:
     def test_sanity(self, mocker, requests_mock):
         args = {
             Constants.method: 'GET',
-            Constants.suffix: '<ip>',
+            Constants.suffix: ':ip',
             Constants.pre_process: Path('ipinfo/preprocess_ipinfo.py').read_text(),
             Constants.context_key: 'ipinfo.ip',
             f'{Prefixes.header}:accept': 'json/application',
