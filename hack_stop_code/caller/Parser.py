@@ -43,13 +43,8 @@ class Parser:
         self._args = args
 
         self.base_url = params.get(Constants.base_url)
-        self.insecure = params.get(Constants.insecure, False) # todo argtobool
+        self.insecure = params.get(Constants.insecure, False)  # todo argtobool
         self.proxy = params.get(Constants.proxy, False)
-        self.auth_format = params.get(Constants.auth_format)
-        self.authentication_type = self._parse_authentication_type(params)
-        if self.auth_format and self.authentication_type != AuthenticationType.Custom:
-            raise ValueError(
-                f"Cannot have auth format with a non-custom authentication type {self.authentication_type}")
 
         self.method = args.get(Constants.method)
         self.body = args.get(Constants.body)
@@ -72,24 +67,30 @@ class Parser:
         self.post_processor = PostProcess()
 
     def generate_auth_header(self):
-        auth_format = None
+        auth_format = self._params.get(Constants.auth_format)
+        authentication_type = self._parse_authentication_type(self._params)
+
+        if authentication_type == AuthenticationType.NoAuth:
+            return dict()
+
+        if auth_format and authentication_type != AuthenticationType.Custom:
+            raise ValueError(f"Cannot have auth format with a non-custom authentication type {authentication_type}")
+
         username = self._params.get('credentials', {}).get('username', '')
         password = self._params.get('credentials', {}).get('password', '')
 
-        if self.authentication_type == AuthenticationType.NoAuth:
-            return dict()
-
+        auth_type_to_auth_format = {
+            AuthenticationType.Basic: f'Basic {Constants.username_placeholder}:{Constants.password_placeholder}',
+            AuthenticationType.Bearer: f'Bearer {Constants.password_placeholder}',
+            AuthenticationType.Custom: auth_format
+        }
         try:
-            auth_format = {
-                AuthenticationType.Basic: f'Basic {Constants.username_placeholder}:{Constants.password_placeholder}',
-                AuthenticationType.Bearer: f'Bearer {Constants.password_placeholder}',
-                AuthenticationType.Custom: self.auth_format
-            }[self.authentication_type]
+            auth_format = auth_type_to_auth_format[authentication_type]
         except KeyError:
-            raise ValueError(f"Unexpected auth type={self.authentication_type}")
+            raise ValueError(f"Unexpected auth type={authentication_type}")
 
         if not auth_format:
-            raise ValueError(f"Empty auth_format, auth type={self.authentication_type}")
+            raise ValueError(f"Empty auth_format, auth type={authentication_type}")
 
         auth_header_value = auth_format \
             .replace(Constants.password_placeholder, password) \
