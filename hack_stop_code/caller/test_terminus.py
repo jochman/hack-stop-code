@@ -10,7 +10,7 @@ def test_sanity():
         Constants.method: 'GET',
         Constants.suffix: 'ip',
         Constants.context_key: 'context_key',
-        'header:accept': 'json/application',
+        f'{Prefixes.header}:accept': 'json/application',
         f'{Prefixes.body_arg}:body_arg_1': 'body_arg_value_1',
         f'{Prefixes.url_arg}:url_arg_1': 'url_arg_value_1',
         f'{Prefixes.custom_arg}:custom_arg_1': 'custom_arg_value_1',
