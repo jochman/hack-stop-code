@@ -1,11 +1,35 @@
 from enum import Enum, auto
-from pathlib import Path
 from typing import NamedTuple
 
 from hack_stop_code.caller.utils import Constants
 
-DEFAULT_POST_PROCESS = Path('post_process.py').read_text()
-DEFAULT_PRE_PROCESS = Path('pre_process.py').read_text()
+DEFAULT_POST_PROCESS = '''import requests
+
+import demistomock as demisto
+from CommonServerPython import CommandResults
+
+
+class PostProcess:
+    @staticmethod
+    def post_process(response: requests.Response) -> CommandResults:
+        # manipulate json if necessary, just make sure to return CommandResults
+        json = response.json()
+        return CommandResults(outputs_prefix=f'demo/{demisto.command()}',
+                              outputs=json,
+                              raw_response=json)
+'''
+DEFAULT_PRE_PROCESS = '''from hack_stop_code.caller.Parser import ParsedArguments
+
+
+class PreProcess:
+    def __init__(self, args: ParsedArguments) -> None:
+        self._args = args
+
+    def get_preprocessed_args(self):
+        # If necessary, change self._args
+        # (the ParsedArguments object is immutable, but its members are mutable)
+        return self._args
+'''
 
 
 class Prefixes:
@@ -111,7 +135,7 @@ class Parser:
         return string_to_type[raw_authentication_type]
 
     def _parse_replace_suffix(self, args):  # call after calling parse_special_args()
-        suffix = args.get(Constants.suffix, '')
+        suffix = args.get(Constants.suffix)
         for k, v in self._parsed_arguments.path_args.items():
             suffix = suffix.replace(f'<{k}>', v)
         return suffix

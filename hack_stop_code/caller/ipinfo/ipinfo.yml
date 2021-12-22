@@ -1,6 +1,6 @@
 category: Data Enrichment & Threat Intelligence
 commonfields:
-  id: ipinfo_v2
+  id: ipinfo_v5
   version: -1
 configuration:
   - name: credentials
@@ -30,6 +30,12 @@ configuration:
     hidden: false
     required: true
     type: 0
+  - name: _headers:header1
+    defaultvalue: 'example1'
+    display: Base URL
+    hidden: true
+    required: false
+    type: 0
   - name: insecure
     display: Trust any certificate (not secure)
     required: false
@@ -41,22 +47,42 @@ configuration:
     options:
       - Basic
       - Bearer
-      - Oauth2
+      - None
   - display: Use system proxy settings
     name: proxy
     required: false
     type: 8
 description: Use the IPinfo.io API to get data about an IP address.
 display: IPinfo v2
-name: ipinfo_v2
+name: ipinfo_v5
 script:
   commands:
     - arguments:
         - default: true
           description: IP address to query, e.g., 1.1.1.1.
           isArray: false
-          name: ip
+          name: _path_param:ip
           required: true
+          secret: false
+        - default: false
+          description: example request arg
+          isArray: false
+          name: _request_param:foo
+          required: false
+          secret: false
+        - default: false
+          description: suffix
+          isArray: false
+          name: suffix
+          required: true
+          defaultValue: <ip>
+          secret: false
+        - default: false
+          description: http method
+          isArray: false
+          name: method
+          required: true
+          defaultValue: GET
           secret: false
       deprecated: false
       description: Check IP reputation (when information is available, returns a JSON

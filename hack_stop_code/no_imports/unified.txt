@@ -1,11 +1,61 @@
-from enum import Enum, auto
 from pathlib import Path
+from typing import Union
+
+
+class Constants:
+    body = 'body'
+    auth_custom = 'auth_custom'
+    auth_format = 'auth_format'
+    authentication_type = '_auth_type'
+    auth_header_key = 'Authorization'
+    password_placeholder = '<password>'
+    username_placeholder = '<username>'
+    auth_bearer = 'Bearer'
+    auth_basic = 'Basic'
+    auth_none = 'None'
+    context_key = 'context_key'
+    method = 'method'
+    suffix = 'suffix'
+    post_process = '_post_process'
+    pre_process = '_pre_process'
+    base_url = 'base_url'
+    insecure = 'insecure'
+    proxy = 'proxy'
+
+
+def load_json(path: Union[str, Path]):
+    with Path(path).open() as f:
+        return load_json(f)
+
+
+
+from enum import Enum, auto
 from typing import NamedTuple
 
-from hack_stop_code.caller.utils import Constants
 
-DEFAULT_POST_PROCESS = Path('post_process.py').read_text()
-DEFAULT_PRE_PROCESS = Path('pre_process.py').read_text()
+DEFAULT_POST_PROCESS = '''import requests
+
+
+class PostProcess:
+    @staticmethod
+    def post_process(response: requests.Response) -> CommandResults:
+        # manipulate json if necessary, just make sure to return CommandResults
+        json = response.json()
+        return CommandResults(outputs_prefix=f'demo/{demisto.command()}',
+                              outputs=json,
+                              raw_response=json)
+'''
+DEFAULT_PRE_PROCESS = '''
+
+class PreProcess:
+    def __init__(self, args: ParsedArguments) -> None:
+        self._args = args
+
+    def get_preprocessed_args(self):
+        # If necessary, change self._args
+        # (the ParsedArguments object is immutable, but its members are mutable)
+        return self._args
+'''
 
 
 class Prefixes:
@@ -111,8 +161,10 @@ class Parser:
         return string_to_type[raw_authentication_type]
 
     def _parse_replace_suffix(self, args):  # call after calling parse_special_args()
-        suffix = args.get(Constants.suffix, '')
+        suffix = args.get(Constants.suffix)
+        print(suffix)
         for k, v in self._parsed_arguments.path_args.items():
+            print(f'{k=}, {v=}')
             suffix = suffix.replace(f'<{k}>', v)
         return suffix
 
@@ -146,3 +198,71 @@ class Parser:
                        for k, v in data.items()
                        if k.startswith(f'{Prefixes.header}:')})
         return result
+
+
+class PreProcess:
+    def __init__(self, args: ParsedArguments) -> None:
+        self._args = args
+
+    def get_preprocessed_args(self):
+        # If necessary, change self._args
+        # (the ParsedArguments object is immutable, but its members are mutable)
+        return self._args
+class ApiCall:
+    @staticmethod
+    def __call__(method: str,
+                 url: str = None,
+                 headers=None,
+                 data=None,
+                 verify: bool = True,
+                 proxy: bool = False,
+                 **kwargs) -> requests.Response:
+        return requests.request(method=method, url=url, data=data, headers=headers)
+
+
+import requests
+
+
+class PostProcess:
+    @staticmethod
+    def post_process(response: requests.Response) -> CommandResults:
+        # manipulate json if necessary, just make sure to return CommandResults
+        json = response.json()
+        return CommandResults(outputs_prefix=f'demo/{demisto.command()}',
+                              outputs=json,
+                              raw_response=json)
+
+from urllib.parse import urljoin
+
+
+class Runner:
+    def __init__(self):
+        print('init runner')
+        self.parser = Parser(params=demisto.params(), args=demisto.args())
+
+    def run(self):
+        args = self.parser.pre_processor.get_preprocessed_args()
+        print("running api call")
+
+        raw_response = ApiCall()(
+            method=self.parser.method,
+            url=urljoin(self.parser.base_url, self.parser.suffix),
+            headers=self.parser.headers,
+            data=self.parser.body,
+            verify=not self.parser.insecure,
+            proxy=self.parser.proxy,
+            params=args.request_args
+        )
+        print("running post")
+
+        return self.parser.post_processor.post_process(raw_response)
+
+print("1")
+
+runner = Runner()
+print("runner")
+results = runner.run()
+print('results')
+return_results(results)
+
+print('return results')
