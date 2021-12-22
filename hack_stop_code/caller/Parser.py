@@ -10,11 +10,13 @@ DEFAULT_PRE_PROCESS = Path('pre_process.py').read_text()
 
 class Prefixes:
     bearer = 'bearer'
+
     body_arg = '_body_arg'
     custom_arg = '_custom_arg'
     path_param = '_path_param'
     request_arg = '_request_arg'  # todo jochman
-    header = 'header'
+
+    header = '_header'
     authorization = 'authorization'
     configuration = 'configuration'
     pre_process = 'preprocess'
@@ -40,21 +42,20 @@ class Parser:
         self._params = params
         self._args = args
 
-        self.method = args.get(Constants.method)
-        self.body = args.get(Constants.body)
         self.base_url = params.get(Constants.base_url)
-        self.insecure = params.get(Constants.insecure, False)
+        self.insecure = params.get(Constants.insecure, False) # todo argtobool
         self.proxy = params.get(Constants.proxy, False)
-
-        self.context_key = args.get(Constants.context_key)
-        self._parsed_arguments = self.parse_special_args(args)
-
         self.auth_format = params.get(Constants.auth_format)
         self.authentication_type = self._parse_authentication_type(params)
-
         if self.auth_format and self.authentication_type != AuthenticationType.Custom:
             raise ValueError(
                 f"Cannot have auth format with a non-custom authentication type {self.authentication_type}")
+
+        self.method = args.get(Constants.method)
+        self.body = args.get(Constants.body)
+        self.context_key = args.get(Constants.context_key)
+        self._parsed_arguments = self.parse_special_args(args)
+
         self.headers = Parser._extract_headers(args) | Parser._extract_headers(params) | self.generate_auth_header()
         self.suffix = self._parse_replace_suffix(args)
 
