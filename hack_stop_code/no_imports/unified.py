@@ -162,9 +162,7 @@ class Parser:
 
     def _parse_replace_suffix(self, args):  # call after calling parse_special_args()
         suffix = args.get(Constants.suffix)
-        print(suffix)
         for k, v in self._parsed_arguments.path_args.items():
-            print(f'{k=}, {v=}')
             suffix = suffix.replace(f'<{k}>', v)
         return suffix
 
@@ -237,12 +235,10 @@ from urllib.parse import urljoin
 
 class Runner:
     def __init__(self):
-        print('init runner')
         self.parser = Parser(params=demisto.params(), args=demisto.args())
 
     def run(self):
         args = self.parser.pre_processor.get_preprocessed_args()
-        print("running api call")
 
         raw_response = ApiCall()(
             method=self.parser.method,
@@ -253,16 +249,10 @@ class Runner:
             proxy=self.parser.proxy,
             params=args.request_args
         )
-        print("running post")
 
         return self.parser.post_processor.post_process(raw_response)
 
-print("1")
 
 runner = Runner()
-print("runner")
 results = runner.run()
-print('results')
 return_results(results)
-
-print('return results')
