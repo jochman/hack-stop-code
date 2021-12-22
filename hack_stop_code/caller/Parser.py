@@ -47,6 +47,9 @@ class Parser:
         self.auth_format = params.get(Constants.auth_format)
         self.authentication_type = self._parse_authentication_type(params)
 
+        if self.auth_format and self.authentication_type != AuthenticationType.Custom:
+            raise ValueError(
+                f"Cannot have auth format with a non-custom authentication type {self.authentication_type}")
         self.headers = Parser._extract_headers(args) | Parser._extract_headers(params) | self.generate_auth_header()
         self.suffix = self._parse_replace_suffix(args)
         # todo pass token as url path param
