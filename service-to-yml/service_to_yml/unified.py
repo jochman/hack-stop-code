@@ -23,15 +23,15 @@ class Constants:
     proxy = 'proxy'
 
 
+from enum import Enum, auto
+
+
 def load_json(path: Union[str, Path]):
     with Path(path).open() as f:
         return load_json(f)
 
 
-
-from enum import Enum, auto
 from typing import NamedTuple
-
 
 DEFAULT_POST_PROCESS = '''import requests
 
@@ -120,7 +120,6 @@ class Parser:
         auth_format = self._params.get(Constants.auth_format)
         authentication_type = self._parse_authentication_type(self._params)
 
-
         if auth_format and authentication_type != AuthenticationType.Custom:
             raise ValueError(f"Cannot have auth format with a non-custom authentication type {authentication_type}")
 
@@ -206,6 +205,8 @@ class PreProcess:
         # If necessary, change self._args
         # (the ParsedArguments object is immutable, but its members are mutable)
         return self._args
+
+
 class ApiCall:
     @staticmethod
     def __call__(method: str,
@@ -229,6 +230,7 @@ class PostProcess:
         return CommandResults(outputs_prefix=f'demo/{demisto.command()}',
                               outputs=json,
                               raw_response=json)
+
 
 from urllib.parse import urljoin
 
