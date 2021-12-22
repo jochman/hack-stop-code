@@ -136,3 +136,8 @@ dmypy.json
 
 # Cython debug symbols
 cython_debug/
+
+#frontend
+.next/
+node_modules/
+.DS_Storel
