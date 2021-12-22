@@ -1,12 +1,11 @@
+import logging
+from parser import Parser
 from typing import Optional
 
 import yaml
 from fastapi import FastAPI
 
-from parser import Parser
 from schema import Demisto, WebSchema
-import logging
-
 
 app = FastAPI()
 

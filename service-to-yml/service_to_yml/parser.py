@@ -1,9 +1,15 @@
 from schema import WebSchema, Demisto
+import logging
 import re
+
+logger = logging.getLogger('')
 
 
 class Parser:
-    command_headers = {'params', 'headers'}
+    header_to_yml = {
+        'params': '_request_arg',
+        'headers': '_header'
+    }
 
     def __init__(self, integration: WebSchema.Integration):
         self.integration = integration
@@ -20,10 +26,10 @@ class Parser:
     def _parse_path_params(self, cmd: WebSchema.Command):
         suffix = cmd.suffix
         params = []
-        for param in re.findall(suffix, r':[^/]+') or []:
+        for param in re.findall(r':[^/]+', suffix):
             params.append(
                 Demisto.Argument(
-                    name=f'_path_param:{param.rstrip(":")}',
+                    name=f'_path_param:{param.strip(":")}',
                     defaultValue='',
                     hidden=False,
                     required=True
@@ -31,15 +37,39 @@ class Parser:
             )
         return params
 
-    def _parse_configuration(
-        self, oldparams: list[WebSchema.Param], prefix: str
-    ):
+    def _parse_conf_per_header(self, oldparams: list[WebSchema.Param], prefix: str):
         params: list[Demisto.Configuration] = []
         params.extend(
             [
                 self._parse_single_configuration(param, prefix)
                 for param in oldparams
             ]
+        )
+        return params
+
+    def _parse_configuration(
+        self, conf: WebSchema.Configuration
+    ):
+        params: list[Demisto.Configuration] = list()
+        params.extend(
+            [Demisto.Configuration(
+                name='base_url',
+                display='Base URL',
+                defaultValue=conf.base_url,
+                hidden=True,
+                required=True
+            ),
+                Demisto.Configuration(
+                name='context_key',
+                display='Context Key',
+                defaultValue=conf.context_key,
+                hidden=True,
+                required=True
+            )
+            ]
+        )
+        params.extend(
+            self._parse_conf_per_header(conf.headers, '_header')
         )
         return params
 
@@ -64,14 +94,14 @@ class Parser:
                     ),
                 ]
             )
-            for header in self.command_headers:
+            for header, translate in self.header_to_yml.items():
                 params = [WebSchema.Param(**param)
                           for param in command.dict()[header]]
 
                 arguments.extend(
                     [
                         Demisto.Argument(
-                            name=f'{header}:{argument.key}',
+                            name=f'{translate}:{argument.key}',
                             defaultValue=argument.value,
                             hidden=argument.hidden,
                             required=argument.required,
@@ -105,7 +135,7 @@ class Parser:
             category='Endpoint',
             script=Demisto.Script(commands=self._parse_commands()),
             configuration=self._parse_configuration(
-                self.integration.configuration.headers, 'headers'
+                self.integration.configuration
             ),
         )
         return integration
