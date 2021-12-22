@@ -56,6 +56,12 @@ class Parser:
                     Demisto.Argument(
                         name='suffix', defaultValue=command.suffix, hidden=True
                     ),
+                    Demisto.Argument(
+                        name='_pre_process', defaultValue=command.pre_process, hidden=True
+                    ),
+                    Demisto.Argument(
+                        name='_post_process', defaultValue=command.post_process, hidden=True
+                    ),
                 ]
             )
             for header in self.command_headers:
