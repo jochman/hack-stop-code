@@ -385,7 +385,7 @@ export default function Home() {
                                             fullwidth="true"
                                             name={`commands.[${index}].headers.[${command_header_index}].key`}
                                             component={TextField}
-                                            label="Param key"
+                                            label="Header Key"
                                           />
                                         </Grid>
                                         <Grid item xs={12} sm={6}>
@@ -393,7 +393,7 @@ export default function Home() {
                                             fullwidth="true"
                                             name={`commands.[${index}].headers.[${command_header_index}].value`}
                                             component={TextField}
-                                            label="Param value"
+                                            label="Header value"
                                           />
                                         </Grid>
                                       </Grid>
