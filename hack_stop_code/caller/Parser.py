@@ -41,21 +41,22 @@ class Parser:
         self.method = args.get(Constants.method)
         self.context_key = args.get(Constants.context_key)
 
-        pre_process_code = args.get(Constants.pre_process) or DEFAULT_PRE_PROCESS
-        post_process_code = args.get(Constants.post_process) or DEFAULT_POST_PROCESS
+        self._pre_process_code = args.get(Constants.pre_process) or DEFAULT_PRE_PROCESS
+        self._post_process_code = args.get(Constants.post_process) or DEFAULT_POST_PROCESS
 
-        self.pre_process_script = exec(pre_process_code, globals())
-        self.post_process_script = exec(post_process_code, globals())
+        self.pre_process_result = exec(self._pre_process_code, globals())
+        self.post_process_result = exec(self._post_process_code, globals())
 
         self.parsed_arguments = self.parse_special_args(args)
-
         self.headers = Parser._extract_headers(args) | Parser._extract_headers(params)
+        self.suffix = self._parse_replace_suffix(args)
 
+    def _parse_replace_suffix(self, args):
         suffix = args.get(Constants.suffix)
         for k, v in self.parsed_arguments.url_args.items():
             if f'<{k}>' in suffix:
                 suffix = suffix.replace(f'<{k}>', v)
-        self.suffix = suffix
+        return suffix
 
     @staticmethod
     def parse_special_args(args):
