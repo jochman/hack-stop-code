@@ -1,0 +1,265 @@
+import {
+  Button,
+  Card,
+  CardContent,
+  CircularProgress,
+  Grid,
+  makeStyles,
+  Typography,
+  Collapse
+} from '@material-ui/core';
+import { Field, FieldArray, Form, Formik } from 'formik';
+import { CheckboxWithLabel, TextField } from 'formik-material-ui';
+import React, { Component } from 'react';
+import { array, boolean, number, object, string, ValidationError } from 'yup';
+
+import { Integartion } from '../schema/integration';
+import { Command } from '../schema/command';
+
+const emptyCommand: Command =
+{
+  "name": "",
+  "method": "",
+  "suffix": "",
+  "params": [],
+  "headers": [],
+  "body": ""
+}
+
+
+const initialValues: Integartion = {
+  configuration: {
+    name: "",
+    base_url: "",
+    context_key: "",
+    headers: [],
+  },
+  commands: [emptyCommand]
+};
+
+
+const useStyles = makeStyles((theme) => ({
+  errorColor: {
+    color: theme.palette.error.main,
+  },
+  noWrap: {
+    [theme.breakpoints.up('sm')]: {
+      flexWrap: 'nowrap',
+    },
+  },
+}));
+
+
+
+export default function Home() {
+  const classes = useStyles();
+  const [openFunction, setOpenFunction] = React.useState(false);
+  return (
+    <Card>
+      <CardContent>
+        <Formik
+          initialValues={initialValues}
+          // initialValues={{
+          //   fullName: '',
+          //   donationsAmount: 0,
+          //   termsAndConditions: false,
+          //   donations: [emptyDonation],
+          // }}
+          // validationSchema={object({
+          //   fullName: string()
+          //     .required('Your name is required')
+          //     .min(2, 'Your name needs to be at least 3 characters')
+          //     .max(10, 'Your name needs to be at most 10 characters'),
+          //   donationsAmount: number().required().min(10),
+          //   termsAndConditions: boolean().required().isTrue(),
+          //   donations: array(
+          //     object({
+          //       institution: string()
+          //         .required('Institution name needed')
+          //         .min(3, 'Institution name needs to be at least 3 characters')
+          //         .max(
+          //           10,
+          //           'Institution name needs to be at most 10 characters'
+          //         ),
+          //       percentage: number()
+          //         .required('Percentage needed')
+          //         .min(1, 'Percentage needs to be at least 1%')
+          //         .max(100, 'Percentage can be at most 100%'),
+          //     })
+          //   )
+          //     .min(1, 'You need to provide at least 1 institution')
+          //     .max(3, 'You can only provide 3 institution')
+          //     .test((donations) => {
+          //       const sum = donations?.reduce(
+          //         (acc, curr) => acc + (curr.percentage || 0),
+          //         0
+          //       );
+
+          //       if (sum !== 100) {
+          //         return new ValidationError(
+          //           `Percentage should be 100%, but you have ${sum}%`,
+          //           undefined,
+          //           'donations'
+          //         );
+          //       }
+
+          //       return true;
+          //     }),
+          // })}
+          onSubmit={async (values) => {
+            console.log('my values', values);
+            return new Promise((res) => setTimeout(res, 2500));
+          }}
+        >
+          {({ values, errors, isSubmitting, isValid }) => (
+            <Form autoComplete="off">
+              <Grid container direction="column" spacing={2}>
+                <Grid item>
+                  <Field
+                    fullWidth
+                    name="integrationName"
+                    component={TextField}
+                    label="Integration Name"
+                  />
+                </Grid>
+
+                <Grid item>
+                  <Field
+                    fullWidth
+                    name="baseURL"
+                    component={TextField}
+                    label="Base URL"
+                  />
+                </Grid>
+
+                <Grid item>
+                  <Field
+                    fullWidth
+                    name="context_key"
+                    component={TextField}
+                    label="Context key"
+                  />
+                </Grid>
+                
+
+                <FieldArray name="commands">
+                  {({ push, remove }) => (
+                    <React.Fragment>
+                      <Grid item>
+                        <Typography variant="body2">
+                          All your commands
+                        </Typography>
+                      </Grid>
+
+                      {values.commands.map((_, index) => (
+                        <Grid
+                          container
+                          item
+                          className={classes.noWrap}
+                          key={index}
+                          spacing={2}
+                        >
+                          <Grid item container spacing={2} xs={12} sm="auto">
+                            <Grid item xs={12} sm={6}>
+                              <Field
+                                fullWidth
+                                name={`commands.${index}.name`}
+                                component={TextField}
+                                label="Command Name"
+                              />
+                            </Grid>
+                            <Grid item xs={12} sm={6}>
+                              <Field
+                                fullWidth
+                                name={`commands.[${index}].method`}
+                                component={TextField}
+                                type="string"
+                                label="Command Method"
+                              />
+                            </Grid>
+                            <Grid item xs={12} sm={6}>
+                              <Field
+                                fullWidth
+                                name={`commands.[${index}].suffix`}
+                                component={TextField}
+                                type="string"
+                                label="Command Suffix"
+                              />
+                            </Grid>
+                          </Grid>
+                          
+                          <Grid item xs={12} sm="auto">
+                            <Button
+                              disabled={isSubmitting}
+                              onClick={() => remove(index)}
+                            >
+                              Delete
+                            </Button>
+                          </Grid>
+                        </Grid>
+                        
+                      ))}
+
+                      <Grid item>
+                        {typeof errors.commands === 'string' ? (
+                          <Typography color="error">
+                            {errors.commands}
+                          </Typography>
+                        ) : null}
+                      </Grid>
+
+                      <Grid item>
+                        <Button
+                          disabled={isSubmitting}
+                          variant="contained"
+                          onClick={() => push(emptyCommand)}
+                        >
+                          Add Command
+                        </Button>
+                      </Grid>
+                    </React.Fragment>
+                  )}
+                </FieldArray>
+
+                <Grid item>
+                  <Field
+                    name="termsAndConditions"
+                    type="checkbox"
+                    component={CheckboxWithLabel}
+                    Label={{
+                      label: 'I accept the terms and conditions',
+                      className: errors.termsAndConditions
+                        ? classes.errorColor
+                        : undefined,
+                    }}
+                  />
+                </Grid>
+
+                <Grid item>
+                  <Button
+                    disabled={isSubmitting}
+                    type="submit"
+                    variant="contained"
+                    color="primary"
+                    startIcon={
+                      isSubmitting ? (
+                        <CircularProgress size="0.9rem" />
+                      ) : undefined
+                    }
+                  >
+                    {isSubmitting ? 'Submitting' : 'Submit'}
+                  </Button>
+                </Grid>
+              </Grid>
+
+              <pre>{JSON.stringify({ values, errors }, null, 4)}</pre>
+            </Form>
+          )}
+      </Formik>
+    </CardContent>
+    </Card >
+  );
+}
+
+
+
