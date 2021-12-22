@@ -36,8 +36,8 @@ const emptyCommand: Command =
   "name": "",
   "method": "GET",
   "suffix": "",
-  "params": [emptyParam],
-  "headers": [emptyParam],
+  "params": [],
+  "headers": [],
   "body": ""
 }
 
@@ -46,7 +46,7 @@ const initialValues: Integartion = {
     name: "",
     base_url: "",
     context_key: "",
-    headers: [emptyParam],
+    headers: [],
   },
   commands: [emptyCommand]
 };
