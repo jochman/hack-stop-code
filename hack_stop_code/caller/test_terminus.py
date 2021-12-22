@@ -137,14 +137,16 @@ def test_none_authentication_missing_format():
 
 
 def test_pre_process(capsys):
-    pre_code = 'print(3)'
-    post_code = 'print("post")'
+    pre_string_to_print = 1
+    post_string_to_print = 2
+    pre_code = f'print({pre_string_to_print})'
+    post_code = f'print({post_string_to_print})'
     args = {Constants.pre_process: pre_code,
             Constants.post_process: post_code}
     params = {
     }
     p = Parser(params=params, args=args)
     out, err = capsys.readouterr()
-    assert out == f'3\npost\n'
+    assert out == f'{pre_string_to_print}\n{post_string_to_print}\n'
     assert p._pre_process_code == pre_code
     assert p._post_process_code == post_code
