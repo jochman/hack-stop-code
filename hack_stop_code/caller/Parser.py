@@ -52,11 +52,18 @@ class Parser:
                 f"Cannot have auth format with a non-custom authentication type {self.authentication_type}")
         self.headers = Parser._extract_headers(args) | Parser._extract_headers(params) | self.generate_auth_header()
         self.suffix = self._parse_replace_suffix(args)
+
         # todo pass token as url path param
         self._pre_process_code = args.get(Constants.pre_process) or DEFAULT_PRE_PROCESS
         self._post_process_code = args.get(Constants.post_process) or DEFAULT_POST_PROCESS
-        self.pre_process_result = exec(self._pre_process_code, globals())
-        self.post_process_result = exec(self._post_process_code, globals())
+
+        exec(self._pre_process_code, globals())
+        exec(self._post_process_code, globals())
+
+        # noinspection PyUnresolvedReferences
+        self.post_processor = PostProcess
+        # noinspection PyUnresolvedReferences
+        self.pre_processor = PreProcess
 
     def generate_auth_header(self):
         auth_format = None

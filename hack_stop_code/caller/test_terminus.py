@@ -88,6 +88,9 @@ def test_sanity():
     assert p._pre_process_code == DEFAULT_PRE_PROCESS
     assert p._post_process_code == DEFAULT_POST_PROCESS
     assert p.context_key == 'context_key'
+    # try to instantiate
+    assert p.pre_processor([])
+    assert p.post_processor()
 
 
 def test_basic_authentication():
@@ -150,3 +153,9 @@ def test_pre_process(capsys):
     assert out == f'{pre_string_to_print}\n{post_string_to_print}\n'
     assert p._pre_process_code == pre_code
     assert p._post_process_code == post_code
+
+
+def test_pre_process(capsys):
+    args = {}
+    params = {}
+    p = Parser(params=params, args=args)
