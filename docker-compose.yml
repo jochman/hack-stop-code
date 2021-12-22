@@ -1,0 +1,10 @@
+version: '3.9'
+services:
+  # frontend:
+  #   build: 
+  #     context: frontend
+  #     dockerfile: Dockerfile
+  service-to-yml:
+    build:
+      context: service-to-yml
+      dockerfile: Dockerfile

@@ -1,0 +1,5 @@
+mypy==0.920
+PyYAML==6.0
+pytest==6.2.5
+types-PyYAML==6.0.1
+autopep8==1.6.0

@@ -1,0 +1,19 @@
+category: Endpoint
+commonfields:
+  id: YodaSpeak
+  version: -1
+configuration: []
+description: An integration to translate English to Yodish.
+display: YodaSpeak
+name: YodaSpeak
+script:
+  commands: []
+  isfetch: false
+  runonce: false
+  script: '-'
+  type: python
+  subtype: python3
+  dockerimage: demisto/python3:3.9.8.24399
+fromversion: 6.0.0
+tests:
+- No tests (auto formatted)
