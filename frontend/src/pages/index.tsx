@@ -171,7 +171,7 @@ export default function Home() {
                 <Grid item>
                   <Field
                     fullwidth="true"
-                    name="configuration.insecure"
+                    name="configuration.proxy"
                     component={CheckboxWithLabel}
                     type="checkbox"
                     Label={{ "label": "Should use proxy?" }}
