@@ -41,6 +41,7 @@ class Parser:
         self._args = args
 
         self.method = args.get(Constants.method)
+        self.body = args.get(Constants.body)
         self.context_key = args.get(Constants.context_key)
         self.parsed_arguments = self.parse_special_args(args)
 
