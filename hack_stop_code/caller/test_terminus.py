@@ -51,7 +51,7 @@ class TestParser:
         params = {
             'credentials': {'username': username, 'password': password},
             Constants.authentication_type: Constants.auth_custom,
-            Constants.auth_format: f'my username is <username> and my password is <password>'
+            Constants.auth_format: f'my username is :username and my password is :password'
         }
         p = Parser(params=params, args=args)
         assert p.headers == {Constants.auth_header_key: f'my username is {username} and my password is {password}'}
