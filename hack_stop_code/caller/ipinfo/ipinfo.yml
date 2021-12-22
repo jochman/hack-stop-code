@@ -1,110 +1,62 @@
-category: Data Enrichment & Threat Intelligence
 commonfields:
   id: ipinfo_v5
   version: -1
-configuration:
-  - name: credentials
-    display: API token
-    additionalinfo: The API key to use for the connection.
-    hiddenusername: true
-    displaypassword: API Token
-    required: false
-    type: 9
-  - name: integrationReliability
-    additionalinfo: Reliability of the source providing the intelligence data.
-    defaultvalue: C - Fairly reliable
-    display: Source Reliability
-    options:
-      - A+ - 3rd party enrichment
-      - A - Completely reliable
-      - B - Usually reliable
-      - C - Fairly reliable
-      - D - Not usually reliable
-      - E - Unreliable
-      - F - Reliability cannot be judged
-    required: true
-    type: 15
-  - name: base_url
-    defaultvalue: https://ipinfo.io
-    display: Base URL
-    hidden: false
-    required: true
-    type: 0
-  - name: _headers:header1
-    defaultvalue: 'example1'
-    display: Base URL
-    hidden: true
-    required: false
-    type: 0
-  - name: insecure
-    display: Trust any certificate (not secure)
-    required: false
-    type: 8
-  - name: _authentication_type
-    display: Authentication type
-    required: true
-    type: 15
-    options:
-      - Basic
-      - Bearer
-      - None
-  - display: Use system proxy settings
-    name: proxy
-    required: false
-    type: 8
-description: Use the IPinfo.io API to get data about an IP address.
-display: IPinfo v2
+vcShouldKeepItemLegacyProdMachine: false
 name: ipinfo_v5
+display: IPinfo v5
+category: Data Enrichment & Threat Intelligence
+description: Use the IPinfo.io API to get data about an IP address.
+configuration:
+- display: API token
+  displaypassword: API Token
+  name: credentials
+  type: 9
+  required: false
+  hiddenusername: true
+  additionalinfo: The API key to use for the connection.
+- display: Source Reliability
+  name: integrationReliability
+  defaultvalue: C - Fairly reliable
+  type: 15
+  required: true
+  options:
+  - A+ - 3rd party enrichment
+  - A - Completely reliable
+  - B - Usually reliable
+  - C - Fairly reliable
+  - D - Not usually reliable
+  - E - Unreliable
+  - F - Reliability cannot be judged
+  additionalinfo: Reliability of the source providing the intelligence data.
+- display: Base URL
+  name: base_url
+  defaultvalue: https://ipinfo.io
+  type: 0
+  required: true
+- display: Base URL
+  name: _headers:header1
+  defaultvalue: example1
+  type: 0
+  required: false
+  hidden: true
+- display: Trust any certificate (not secure)
+  name: insecure
+  type: 8
+  required: false
+- display: Authentication type
+  name: _authentication_type
+  type: 15
+  required: true
+  options:
+  - Basic
+  - Bearer
+  - None
+- display: Use system proxy settings
+  name: proxy
+  type: 8
+  required: false
 script:
-  commands:
-    - arguments:
-        - default: true
-          description: IP address to query, e.g., 1.1.1.1.
-          isArray: false
-          name: _path_param:ip
-          required: true
-          secret: false
-        - default: false
-          description: example request arg
-          isArray: false
-          name: _request_param:foo
-          required: false
-          secret: false
-        - default: false
-          description: suffix
-          isArray: false
-          name: suffix
-          required: true
-          defaultValue: <ip>
-          secret: false
-        - default: false
-          description: accept json
-          isArray: false
-          name: header:Accept
-          required: true
-          defaultValue: application/json
-          secret: false
-        - default: false
-          description: http method
-          isArray: false
-          name: method
-          required: true
-          defaultValue: GET
-          secret: false
-      deprecated: false
-      description: Check IP reputation (when information is available, returns a JSON
-        with details). Uses all configured Threat Intelligence feeds.
-      execution: false
-      name: ip
-      preprocess: null
-      postprocess: null
-  dockerimage: demisto/python3:3.9.7.24076
-  feed: false
-  isfetch: false
-  longRunning: false
-  longRunningPort: false
-  runonce: false
-  script: >
+  script: |-
     from pathlib import Path
     from typing import Union
 
@@ -269,9 +221,7 @@ script:
 
         def _parse_replace_suffix(self, args):  # call after calling parse_special_args()
             suffix = args.get(Constants.suffix)
-            print(suffix)
             for k, v in self._parsed_arguments.path_args.items():
-                print(f'{k=}, {v=}')
                 suffix = suffix.replace(f'<{k}>', v)
             return suffix
 
@@ -344,12 +294,10 @@ script:
 
     class Runner:
         def __init__(self):
-            print('init runner')
             self.parser = Parser(params=demisto.params(), args=demisto.args())
 
         def run(self):
             args = self.parser.pre_processor.get_preprocessed_args()
-            print("running api call")
 
             raw_response = ApiCall()(
                 method=self.parser.method,
@@ -360,21 +308,37 @@ script:
                 proxy=self.parser.proxy,
                 params=args.request_args
             )
-            print("running post")
-
             return self.parser.post_processor.post_process(raw_response)
 
-    print("1")
 
     runner = Runner()
-    print("runner")
     results = runner.run()
-    print('results')
     return_results(results)
 
-    print('return results')
-  subtype: python3
   type: python
-tests:
-  - IPInfo_v2Test
-fromversion: 5.5.0
+  commands:
+  - name: ip
+    arguments:
+    - name: _path_param:ip
+      required: true
+      default: true
+      description: IP address to query, e.g., 1.1.1.1.
+    - name: _request_param:foo
+      description: example request arg
+    - name: suffix
+      required: true
+      description: suffix
+      defaultValue: <ip>
+    - name: header:Accept
+      required: true
+      description: accept json
+      defaultValue: application/json
+    - name: method
+      required: true
+      description: http method
+      defaultValue: GET
+    description: Check IP reputation (when information is available, returns a JSON
+      with details). Uses all configured Threat Intelligence feeds.
+  dockerimage: demisto/python3:3.9.7.24076
+  runonce: false
+  subtype: python3
