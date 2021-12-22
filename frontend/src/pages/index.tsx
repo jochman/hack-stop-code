@@ -15,24 +15,35 @@ import { array, boolean, number, object, string, ValidationError } from 'yup';
 
 import { Integartion } from '../schema/integration';
 import { Command } from '../schema/command';
+import { Param } from '../schema/param';
+import { TurnedInTwoTone } from '@material-ui/icons';
+
+
+
+const emptyParam: Param =
+{
+  "key": "",
+  "value": "",
+  "required": true,
+  "hidden": false,
+}
 
 const emptyCommand: Command =
 {
   "name": "",
   "method": "",
   "suffix": "",
-  "params": [],
-  "headers": [],
+  "params": [emptyParam],
+  "headers": [emptyParam],
   "body": ""
 }
-
 
 const initialValues: Integartion = {
   configuration: {
     name: "",
     base_url: "",
     context_key: "",
-    headers: [],
+    headers: [emptyParam],
   },
   commands: [emptyCommand]
 };
@@ -116,8 +127,8 @@ export default function Home() {
               <Grid container direction="column" spacing={2}>
                 <Grid item>
                   <Field
-                    fullWidth
-                    name="integrationName"
+                    fullwidth="true"
+                    name="configuration.name"
                     component={TextField}
                     label="Integration Name"
                   />
@@ -125,8 +136,8 @@ export default function Home() {
 
                 <Grid item>
                   <Field
-                    fullWidth
-                    name="baseURL"
+                    fullwidth="true"
+                    name="configuration.base_url"
                     component={TextField}
                     label="Base URL"
                   />
@@ -134,13 +145,78 @@ export default function Home() {
 
                 <Grid item>
                   <Field
-                    fullWidth
-                    name="context_key"
+                    fullwidth="true"
+                    name="configuration.context_key"
                     component={TextField}
                     label="Context key"
                   />
                 </Grid>
-                
+
+
+
+                <FieldArray name="configuration.headers">
+                  {({ push, remove }) => (
+                    <React.Fragment>
+                      <Grid item>
+                        <Typography variant="body2">
+                          Your headers
+                        </Typography>
+                      </Grid>
+
+                      {values.configuration.headers.map((_, header_index) => (
+                        <Grid
+                          container
+                          item
+                          className={classes.noWrap}
+                          key={header_index}
+                          spacing={2}
+                        >
+                          <Grid item container spacing={2} xs={12} sm="auto">
+                            <Grid item xs={12} sm={6}>
+                              <Field
+                                fullwidth="true"
+                                name={`configuration.headers.${header_index}.key`}
+                                component={TextField}
+                                label="Header key"
+                              />
+                            </Grid>
+                            <Grid item xs={12} sm={6}>
+                              <Field
+                                fullwidth="true"
+                                name={`configuration.headers.${header_index}.value`}
+                                component={TextField}
+                                label="Header value"
+                              />
+                            </Grid>
+                          </Grid>
+
+                          <Grid item xs={12} sm="auto">
+                            <Button
+                              disabled={isSubmitting}
+                              onClick={() => remove(header_index)}
+                            >
+                              Delete Header
+                            </Button>
+                          </Grid>
+                        </Grid>
+
+                      ))}
+                      <Grid item>
+                        <Button
+                          disabled={isSubmitting}
+                          variant="contained"
+                          onClick={() => push(emptyParam)}
+                        >
+                          Add Header
+                        </Button>
+                      </Grid>
+                    </React.Fragment>
+                  )}
+                </FieldArray>
+
+
+
+
 
                 <FieldArray name="commands">
                   {({ push, remove }) => (
@@ -162,7 +238,7 @@ export default function Home() {
                           <Grid item container spacing={2} xs={12} sm="auto">
                             <Grid item xs={12} sm={6}>
                               <Field
-                                fullWidth
+                                fullwidth="true"
                                 name={`commands.${index}.name`}
                                 component={TextField}
                                 label="Command Name"
@@ -170,7 +246,7 @@ export default function Home() {
                             </Grid>
                             <Grid item xs={12} sm={6}>
                               <Field
-                                fullWidth
+                                fullwidth="true"
                                 name={`commands.[${index}].method`}
                                 component={TextField}
                                 type="string"
@@ -179,25 +255,175 @@ export default function Home() {
                             </Grid>
                             <Grid item xs={12} sm={6}>
                               <Field
-                                fullWidth
+                                fullwidth="true"
                                 name={`commands.[${index}].suffix`}
                                 component={TextField}
                                 type="string"
                                 label="Command Suffix"
                               />
                             </Grid>
+                            <Grid item xs={12} sm={6}>
+                              <Field
+                                fullwidth="true"
+                                name={`commands.[${index}].body`}
+                                component={TextField}
+                                type="string"
+                                label="Command body"
+                              />
+                            </Grid>
+                            <FieldArray name={`commands[${index}].params`}>
+                              {({ push, remove }) => (
+                                <React.Fragment>
+                                  <Grid item>
+                                    <Typography variant="body2">
+                                      Params for command
+                                    </Typography>
+                                  </Grid>
+
+                                  {values.commands[index].params.map((_, param_index) => (
+                                    <Grid
+                                      container
+                                      item
+                                      className={classes.noWrap}
+                                      key={param_index}
+                                      spacing={2}
+                                    >
+                                      <Grid item container spacing={2} xs={12} sm="auto">
+                                        <Grid item xs={12} sm={6}>
+                                          <Field
+                                            fullwidth="true"
+                                            name={`commands.[${index}].params.[${param_index}].key`}
+                                            component={TextField}
+                                            label="Param key"
+                                          />
+                                        </Grid>
+                                        <Grid item xs={12} sm={6}>
+                                          <Field
+                                            fullwidth="true"
+                                            name={`commands.[${index}].params.[${param_index}].value`}
+                                            component={TextField}
+                                            label="Param value"
+                                          />
+                                        </Grid>
+
+                                        <Grid item xs={12} sm={6}>
+                                          <Field
+                                            fullwidth="true"
+                                            name={`commands.[${index}].params.[${param_index}].required`}
+                                            component={CheckboxWithLabel}
+                                            type="checkbox"
+                                            Label={{"label": "Is required?"}}
+                                          />
+                                        </Grid>
+
+                                        <Grid item xs={12} sm={6}>
+                                          <Field
+                                            fullwidth="true"
+                                            name={`commands.[${index}].params.[${param_index}].hidden`}
+                                            component={CheckboxWithLabel}
+                                            type="checkbox"
+                                            Label={{"label": "Is hidden?"}}
+                                          />
+                                        </Grid>
+                                      </Grid>
+
+                                      <Grid item xs={12} sm="auto">
+                                        <Button
+                                          disabled={isSubmitting}
+                                          onClick={() => remove(param_index)}
+                                        >
+                                          Delete param
+                                        </Button>
+                                      </Grid>
+                                    </Grid>
+
+                                  ))}
+                                  <Grid item>
+                                    <Button
+                                      disabled={isSubmitting}
+                                      variant="contained"
+                                      onClick={() => push(emptyParam)}
+                                    >
+                                      Add Param
+                                    </Button>
+                                  </Grid>
+                                </React.Fragment>
+                              )}
+                            </FieldArray>
+
+                            <FieldArray name={`commands[${index}].headers`}>
+                              {({ push, remove }) => (
+                                <React.Fragment>
+                                  <Grid item>
+                                    <Typography variant="body2">
+                                      Headers for command
+                                    </Typography>
+                                  </Grid>
+
+                                  {values.commands[index].params.map((_, command_header_index) => (
+                                    <Grid
+                                      container
+                                      item
+                                      className={classes.noWrap}
+                                      key={command_header_index}
+                                      spacing={2}
+                                    >
+                                      <Grid item container spacing={2} xs={12} sm="auto">
+                                        <Grid item xs={12} sm={6}>
+                                          <Field
+                                            fullwidth="true"
+                                            name={`commands.[${index}].params.[${command_header_index}].key`}
+                                            component={TextField}
+                                            label="Param key"
+                                          />
+                                        </Grid>
+                                        <Grid item xs={12} sm={6}>
+                                          <Field
+                                            fullwidth="true"
+                                            name={`commands.[${index}].params.[${command_header_index}].value`}
+                                            component={TextField}
+                                            label="Param value"
+                                          />
+                                        </Grid>
+                                      </Grid>
+
+                                      <Grid item xs={12} sm="auto">
+                                        <Button
+                                          disabled={isSubmitting}
+                                          onClick={() => remove(command_header_index)}
+                                        >
+                                          Delete Command Header
+                                        </Button>
+                                      </Grid>
+                                    </Grid>
+
+                                  ))}
+                                  <Grid item>
+                                    <Button
+                                      disabled={isSubmitting}
+                                      variant="contained"
+                                      onClick={() => push(emptyParam)}
+                                    >
+                                      Add Command Header
+                                    </Button>
+                                  </Grid>
+                                </React.Fragment>
+                              )}
+                            </FieldArray>
+
+
                           </Grid>
-                          
+
                           <Grid item xs={12} sm="auto">
                             <Button
                               disabled={isSubmitting}
                               onClick={() => remove(index)}
                             >
-                              Delete
+                              Delete Command
                             </Button>
                           </Grid>
                         </Grid>
-                        
+
                       ))}
 
                       <Grid item>
@@ -255,8 +481,8 @@ export default function Home() {
               <pre>{JSON.stringify({ values, errors }, null, 4)}</pre>
             </Form>
           )}
-      </Formik>
-    </CardContent>
+        </Formik>
+      </CardContent>
     </Card >
   );
 }

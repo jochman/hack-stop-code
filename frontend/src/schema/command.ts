@@ -6,5 +6,5 @@ export interface Command{
     suffix: string
     params: Param[]
     headers: Param[]
-    body: Param[]
+    body: string
 }
