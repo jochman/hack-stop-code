@@ -134,3 +134,17 @@ def test_none_authentication_missing_format():
     }
     with pytest.raises(ValueError):
         Parser(params=params, args=args)
+
+
+def test_pre_process(capsys):
+    pre_code = 'print(3)'
+    post_code = 'print("post")'
+    args = {Constants.pre_process: pre_code,
+            Constants.post_process: post_code}
+    params = {
+    }
+    p = Parser(params=params, args=args)
+    out, err = capsys.readouterr()
+    assert out == f'3\npost\n'
+    assert p._pre_process_code == pre_code
+    assert p._post_process_code == post_code
