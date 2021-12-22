@@ -46,6 +46,8 @@ const initialValues: Integartion = {
     name: "",
     base_url: "",
     context_key: "",
+    insecure: false,
+    proxy: false,
     headers: [],
   },
   commands: [emptyCommand]
@@ -153,6 +155,26 @@ export default function Home() {
                     name="configuration.context_key"
                     component={TextField}
                     label="Context key"
+                  />
+                </Grid>
+
+                <Grid item>
+                  <Field
+                    fullwidth="true"
+                    name="configuration.insecure"
+                    component={CheckboxWithLabel}
+                    type="checkbox"
+                    Label={{ "label": "Should verify ssl?" }}
+                  />
+                </Grid>
+
+                <Grid item>
+                  <Field
+                    fullwidth="true"
+                    name="configuration.insecure"
+                    component={CheckboxWithLabel}
+                    type="checkbox"
+                    Label={{ "label": "Should use proxy?" }}
                   />
                 </Grid>
 
