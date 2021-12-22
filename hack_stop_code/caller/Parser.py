@@ -28,30 +28,31 @@ class CommandArguments(NamedTuple):
 
 class Parser:
     @staticmethod
-    def parse_authorization(s: str):
+    def _parse_authorization(s: str):
         return s.removeprefix(f"{Prefixes.authorization}:")
 
     @staticmethod
-    def parse_header(s: str):
+    def _parse_header(s: str):
+        s = s.removeprefix(f'{Prefixes.header}:')
+
         if s.startswith(Prefixes.authorization):
-            return Parser.parse_authorization(s)
+            return Parser._parse_authorization(s)
+
         # todo other auth types
 
     def __init__(self, params: dict, args: dict):
         self.method = args.get(Constants.method)
         self.context_key = args.get(Constants.context_key)
-
-        self._pre_process_code = args.get(Constants.pre_process) or DEFAULT_PRE_PROCESS
-        self._post_process_code = args.get(Constants.post_process) or DEFAULT_POST_PROCESS
-
-        self.pre_process_result = exec(self._pre_process_code, globals())
-        self.post_process_result = exec(self._post_process_code, globals())
-
         self.parsed_arguments = self.parse_special_args(args)
         self.headers = Parser._extract_headers(args) | Parser._extract_headers(params)
         self.suffix = self._parse_replace_suffix(args)
 
-    def _parse_replace_suffix(self, args):
+        self._pre_process_code = args.get(Constants.pre_process) or DEFAULT_PRE_PROCESS
+        self._post_process_code = args.get(Constants.post_process) or DEFAULT_POST_PROCESS
+        self.pre_process_result = exec(self._pre_process_code, globals())
+        self.post_process_result = exec(self._post_process_code, globals())
+
+    def _parse_replace_suffix(self, args):  # call after calling parse_special_args()
         suffix = args.get(Constants.suffix)
         for k, v in self.parsed_arguments.url_args.items():
             if f'<{k}>' in suffix:
@@ -81,6 +82,6 @@ class Parser:
 
     @staticmethod
     def _extract_headers(data: dict):
-        return {Parser.parse_header(k): v
+        return {Parser._parse_header(k): v
                 for k, v in data.items()
                 if k.startswith(f'{Prefixes.header}:')}
