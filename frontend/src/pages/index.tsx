@@ -6,17 +6,20 @@ import {
   Grid,
   makeStyles,
   Typography,
-  Collapse
+  Collapse,
+  MenuItem,
+  Select,
+
 } from '@material-ui/core';
 import { Field, FieldArray, Form, Formik } from 'formik';
 import { CheckboxWithLabel, TextField } from 'formik-material-ui';
-import React, { Component } from 'react';
+import React, { Children, Component } from 'react';
 import { array, boolean, number, object, string, ValidationError } from 'yup';
 
 import { Integartion } from '../schema/integration';
 import { Command } from '../schema/command';
 import { Param } from '../schema/param';
-import { TurnedInTwoTone } from '@material-ui/icons';
+import { Menu, TurnedInTwoTone } from '@material-ui/icons';
 
 
 
@@ -31,7 +34,7 @@ const emptyParam: Param =
 const emptyCommand: Command =
 {
   "name": "",
-  "method": "",
+  "method": "GET",
   "suffix": "",
   "params": [emptyParam],
   "headers": [emptyParam],
@@ -48,6 +51,14 @@ const initialValues: Integartion = {
   commands: [emptyCommand]
 };
 
+const methodOptions = [
+  "GET",
+  "POST",
+  "UPDATE",
+  "PATCH",
+  "DELETE"
+]
+
 
 const useStyles = makeStyles((theme) => ({
   errorColor: {
@@ -63,8 +74,8 @@ const useStyles = makeStyles((theme) => ({
 
 
 export default function Home() {
+
   const classes = useStyles();
-  const [openFunction, setOpenFunction] = React.useState(false);
   return (
     <Card>
       <CardContent>
@@ -248,10 +259,17 @@ export default function Home() {
                               <Field
                                 fullwidth="true"
                                 name={`commands.[${index}].method`}
-                                component={TextField}
-                                type="string"
+                                component={"select"}
+                                placeholder="GET"
                                 label="Command Method"
-                              />
+                              >
+                                <option value="GET">GET</option>
+                                <option value="POST">POST</option>
+                                <option value="DELETE">DELETE</option>
+                                <option value="UPDATE">UPDATE</option>
+                                <option value="PATCH">PATCH</option>
+
+                              </Field>
                             </Grid>
                             <Grid item xs={12} sm={6}>
                               <Field
@@ -312,7 +330,7 @@ export default function Home() {
                                             name={`commands.[${index}].params.[${param_index}].required`}
                                             component={CheckboxWithLabel}
                                             type="checkbox"
-                                            Label={{"label": "Is required?"}}
+                                            Label={{ "label": "Is required?" }}
                                           />
                                         </Grid>
 
@@ -322,7 +340,7 @@ export default function Home() {
                                             name={`commands.[${index}].params.[${param_index}].hidden`}
                                             component={CheckboxWithLabel}
                                             type="checkbox"
-                                            Label={{"label": "Is hidden?"}}
+                                            Label={{ "label": "Is hidden?" }}
                                           />
                                         </Grid>
                                       </Grid>
