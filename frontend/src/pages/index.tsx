@@ -6,20 +6,16 @@ import {
   Grid,
   makeStyles,
   Typography,
-  Collapse,
-  MenuItem,
-  Select,
+
 
 } from '@material-ui/core';
 import { Field, FieldArray, Form, Formik } from 'formik';
 import { CheckboxWithLabel, TextField } from 'formik-material-ui';
 import React, { Children, Component } from 'react';
-import { array, boolean, number, object, string, ValidationError } from 'yup';
 
 import { Integartion } from '../schema/integration';
 import { Command } from '../schema/command';
 import { Param } from '../schema/param';
-import { Menu, TurnedInTwoTone } from '@material-ui/icons';
 import axios from 'axios';
 import YAML from 'yaml'
 import fileDownload from 'js-file-download'
@@ -366,7 +362,7 @@ export default function Home() {
                               )}
                             </FieldArray>
 
-                            <FieldArray name={`commands[${index}].headers`}>
+                            <FieldArray name={`commands.[${index}].headers`}>
                               {({ push, remove }) => (
                                 <React.Fragment>
                                   <Grid item>
@@ -375,7 +371,7 @@ export default function Home() {
                                     </Typography>
                                   </Grid>
 
-                                  {values.commands[index].params.map((_, command_header_index) => (
+                                  {values.commands[index].headers.map((_, command_header_index) => (
                                     <Grid
                                       container
                                       item
