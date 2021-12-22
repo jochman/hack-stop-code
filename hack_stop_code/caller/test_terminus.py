@@ -1,7 +1,7 @@
 import pytest
 
 from Parser import (DEFAULT_POST_PROCESS, DEFAULT_PRE_PROCESS,
-                    ParsedArguments, Parser, Prefixes)
+                    ParsedArguments, Parser, Prefixes, AuthenticationType)
 from utils import Constants
 
 
@@ -109,17 +109,14 @@ def test_basic_authentication():
 
 def test_none_authentication():
     args = {}
-    params = {
-        Constants.authentication_type: Constants.auth_none,
-    }
+    params = {Constants.authentication_type: Constants.auth_none}
     p = Parser(params=params, args=args)
     assert p.headers == {}
-    assert p._pre_process_code == DEFAULT_PRE_PROCESS
-    assert p._post_process_code == DEFAULT_POST_PROCESS
+    assert p.authentication_type == AuthenticationType.NoAuth
 
 
 @pytest.mark.parametrize('auth_type', (Constants.auth_none, Constants.auth_basic, Constants.auth_bearer))
-def test_none_authentication(auth_type: str):
+def test_empty_custom_raises(auth_type: str):
     args = {}
     params = {
         Constants.auth_format: 'not empty',

@@ -7,19 +7,14 @@ from pre_process import PreProcess
 
 
 class Runner:
-    def __init__(
-            self,
-            pre_process: PreProcess,
-            parser: Parser,
-            post_process: PostProcess
-    ) -> None:
+    def __init__(self, pre_process: PreProcess, parser: Parser, post_process: PostProcess):
         self.pre_process = pre_process
         self.parser = parser
         self.post_process = post_process
 
     def run(self):
-        args = self.pre_process.process()  # changes args inplace
-        response = ApiCall()(
+        args = self.pre_process.get_preprocessed_args()
+        raw_response = ApiCall()(
             method=self.parser.method,
             url=urljoin(self.parser.base_url, self.parser.suffix),
             headers=self.parser.headers,
@@ -28,5 +23,5 @@ class Runner:
             proxy=self.parser.proxy,
             params=args.request_args
         )
-        processed_data = self.post_process.process(response)
-        return processed_data
+        response = self.post_process.post_process(raw_response)
+        return response

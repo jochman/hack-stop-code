@@ -9,9 +9,10 @@ def main():
     pre_processor = parser.pre_processor
     post_processor = parser.post_processor
 
-    # Calling
+    # Show time
     runner = Runner(pre_processor, post_processor)
-    runner.run()
+    print(runner.run())
+
 
 if __name__ == '__main__':
     main()
