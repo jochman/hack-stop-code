@@ -106,6 +106,7 @@ script:
   runonce: false
   script: >
     from pathlib import Path
+
     from typing import Union
 
 
@@ -137,6 +138,7 @@ script:
 
 
     from enum import Enum, auto
+
     from typing import NamedTuple
 
 
