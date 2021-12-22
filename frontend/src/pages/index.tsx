@@ -20,6 +20,7 @@ import { Integartion } from '../schema/integration';
 import { Command } from '../schema/command';
 import { Param } from '../schema/param';
 import { Menu, TurnedInTwoTone } from '@material-ui/icons';
+import axios from 'axios';
 
 
 
@@ -130,6 +131,7 @@ export default function Home() {
           // })}
           onSubmit={async (values) => {
             console.log('my values', values);
+            postData(values)
             return new Promise((res) => setTimeout(res, 2500));
           }}
         >
@@ -466,20 +468,6 @@ export default function Home() {
                 </FieldArray>
 
                 <Grid item>
-                  <Field
-                    name="termsAndConditions"
-                    type="checkbox"
-                    component={CheckboxWithLabel}
-                    Label={{
-                      label: 'I accept the terms and conditions',
-                      className: errors.termsAndConditions
-                        ? classes.errorColor
-                        : undefined,
-                    }}
-                  />
-                </Grid>
-
-                <Grid item>
                   <Button
                     disabled={isSubmitting}
                     type="submit"
@@ -505,5 +493,7 @@ export default function Home() {
   );
 }
 
-
+const postData = (values: any) => {
+  axios.post("http://localhost:8000/", values).then((res: any) => {console.log(res)})
+}
 
