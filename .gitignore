@@ -140,3 +140,4 @@ cython_debug/
 #frontend
 .next/
 node_modules/
+.DS_Storel
