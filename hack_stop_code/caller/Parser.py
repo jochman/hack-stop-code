@@ -12,7 +12,7 @@ class Prefixes:
     bearer = 'bearer'
     body_arg = '_body_arg'
     custom_arg = '_custom_arg'
-    url_arg = '_url_arg'
+    path_param = '_path_param'
     request_arg = '_request_arg'  # todo jochman
     header = 'header'
     authorization = 'authorization'
@@ -22,7 +22,7 @@ class Prefixes:
 
 
 class ParsedArguments(NamedTuple):
-    url_args: dict
+    path_args: dict
     custom_args: dict
     request_args: dict
     body_args: dict
@@ -42,7 +42,7 @@ class Parser:
 
         self.method = args.get(Constants.method)
         self.body = args.get(Constants.body)
-        self.base_url = args.get(Constants.base_url)
+        self.base_url = params.get(Constants.base_url)
         self.insecure = params.get(Constants.insecure, False)
         self.proxy = params.get(Constants.proxy, False)
 
@@ -109,19 +109,19 @@ class Parser:
 
     def _parse_replace_suffix(self, args):  # call after calling parse_special_args()
         suffix = args.get(Constants.suffix)
-        for k, v in self._parsed_arguments.url_args.items():
+        for k, v in self._parsed_arguments.path_args.items():
             suffix = suffix.replace(f'<{k}>', v)
         return suffix
 
     @staticmethod
     def parse_special_args(args):
-        url_args = {}
+        path_params = {}
         custom_args = {}
         request_args = {}
         body_args = {}
 
         prefix_to_dict = {
-            f'{Prefixes.url_arg}:': url_args,
+            f'{Prefixes.path_param}:': path_params,
             f'{Prefixes.custom_arg}:': custom_args,
             f'{Prefixes.request_arg}:': request_args,
             f'{Prefixes.body_arg}:': body_args
@@ -133,7 +133,7 @@ class Parser:
                     destination[k.removeprefix(prefix)] = v
                     break
 
-        return ParsedArguments(url_args=url_args, custom_args=custom_args,
+        return ParsedArguments(path_args=path_params, custom_args=custom_args,
                                request_args=request_args, body_args=body_args)
 
     @staticmethod

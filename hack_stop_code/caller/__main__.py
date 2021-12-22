@@ -1,17 +1,12 @@
 # todo jochman fix all imports
-from hack_stop_code.caller.Parser import Parser
+from CommonServerPython import return_results
 from hack_stop_code.caller.runner import Runner
 
 
 def main():
-    # Initialization
-    parser = Parser(params=demisto.params(), args=demisto.args())
-    pre_processor = parser.pre_processor
-    post_processor = parser.post_processor
-
-    # Show time
-    runner = Runner(pre_processor, post_processor)
-    print(runner.run())
+    runner = Runner()
+    results = runner.run()
+    return_results(results)
 
 
 if __name__ == '__main__':

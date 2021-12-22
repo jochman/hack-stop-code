@@ -1,19 +1,16 @@
 from urllib.parse import urljoin
 
+import demistomock as demisto  # todo remove
 from api_call import ApiCall
 from hack_stop_code.caller.Parser import Parser
-from post_process import PostProcess
-from pre_process import PreProcess
 
 
 class Runner:
-    def __init__(self, pre_process: PreProcess, parser: Parser, post_process: PostProcess):
-        self.pre_process = pre_process
-        self.parser = parser
-        self.post_process = post_process
+    def __init__(self):
+        self.parser = Parser(params=demisto.params(), args=demisto.args())
 
     def run(self):
-        args = self.pre_process.get_preprocessed_args()
+        args = self.parser.pre_processor.get_preprocessed_args()
         raw_response = ApiCall()(
             method=self.parser.method,
             url=urljoin(self.parser.base_url, self.parser.suffix),
@@ -23,5 +20,4 @@ class Runner:
             proxy=self.parser.proxy,
             params=args.request_args
         )
-        response = self.post_process.post_process(raw_response)
-        return response
+        return self.parser.post_processor.post_process(raw_response)

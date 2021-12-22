@@ -1,9 +1,14 @@
 import requests
 
+import demistomock as demisto
+from CommonServerPython import CommandResults
+
 
 class PostProcess:
     @staticmethod
-    def post_process(response: requests.Response) -> dict:
-        # manipulate the response here and return a dictionary
-        # or just return response.json()
-        return response.json()
+    def post_process(response: requests.Response) -> CommandResults:
+        # manipulate json if necessary, just make sure to return CommandResults
+        json = response.json()
+        return CommandResults(outputs_prefix=f'demo/{demisto.command()}',
+                              outputs=json,
+                              raw_response=json)
