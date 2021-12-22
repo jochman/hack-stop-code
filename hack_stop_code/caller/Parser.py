@@ -21,7 +21,7 @@ class Prefixes:
     post_process = 'preprocess'
 
 
-class CommandArguments(NamedTuple):
+class ParsedArguments(NamedTuple):
     url_args: dict
     custom_args: dict
     request_args: dict
@@ -42,8 +42,12 @@ class Parser:
 
         self.method = args.get(Constants.method)
         self.body = args.get(Constants.body)
+        self.base_url = args.get(Constants.base_url)
+        self.insecure = params.get(Constants.insecure, False)
+        self.proxy = params.get(Constants.proxy, False)
+
         self.context_key = args.get(Constants.context_key)
-        self.parsed_arguments = self.parse_special_args(args)
+        self._parsed_arguments = self.parse_special_args(args)
 
         self.auth_format = params.get(Constants.auth_format)
         self.authentication_type = self._parse_authentication_type(params)
@@ -58,13 +62,13 @@ class Parser:
         self._pre_process_code = args.get(Constants.pre_process) or DEFAULT_PRE_PROCESS
         self._post_process_code = args.get(Constants.post_process) or DEFAULT_POST_PROCESS
 
-        exec(self._pre_process_code, globals())
-        exec(self._post_process_code, globals())
+        exec(self._pre_process_code, globals())  # imports the customized PreProcess class
+        exec(self._post_process_code, globals())  # imports the customized PostProcess class
 
         # noinspection PyUnresolvedReferences
-        self.post_processor = PostProcess
+        self.pre_processor = PreProcess(self._parsed_arguments)
         # noinspection PyUnresolvedReferences
-        self.pre_processor = PreProcess
+        self.post_processor = PostProcess()
 
     def generate_auth_header(self):
         auth_format = None
@@ -105,9 +109,8 @@ class Parser:
 
     def _parse_replace_suffix(self, args):  # call after calling parse_special_args()
         suffix = args.get(Constants.suffix)
-        for k, v in self.parsed_arguments.url_args.items():
-            if f'<{k}>' in suffix:
-                suffix = suffix.replace(f'<{k}>', v)
+        for k, v in self._parsed_arguments.url_args.items():
+            suffix = suffix.replace(f'<{k}>', v)
         return suffix
 
     @staticmethod
@@ -130,8 +133,8 @@ class Parser:
                     destination[k.removeprefix(prefix)] = v
                     break
 
-        return CommandArguments(url_args=url_args, custom_args=custom_args,
-                                request_args=request_args, body_args=body_args)
+        return ParsedArguments(url_args=url_args, custom_args=custom_args,
+                               request_args=request_args, body_args=body_args)
 
     @staticmethod
     def _extract_headers(data: dict):
@@ -148,8 +151,8 @@ param auth_type
  basic  (credentials.username, credentials.password)
  oauth2 (fields that look like authentication:app_id, authentication:app_secret,...) 
  
-param auth format supporting <username, password>
+param auth_format supporting <username, password>
  supporting 
-     username:password
-     username__password
+     <username>:<password>
+     <username>_@@@_<password>
 '''

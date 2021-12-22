@@ -1,6 +1,11 @@
+from hack_stop_code.caller.Parser import ParsedArguments
+
+
 class PreProcess:
-    def __init__(self, args: list) -> None:
-        self.args = args
+    def __init__(self, args: ParsedArguments) -> None:
+        self._args = args
 
     def process(self):
-        pass
+        # If necessary, change self._args here
+        # (the object is immutable, but its members are mutable)
+        return self._args

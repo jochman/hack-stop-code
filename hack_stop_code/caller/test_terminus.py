@@ -1,7 +1,7 @@
 import pytest
 
 from Parser import (DEFAULT_POST_PROCESS, DEFAULT_PRE_PROCESS,
-                    CommandArguments, Parser, Prefixes)
+                    ParsedArguments, Parser, Prefixes)
 from utils import Constants
 
 
@@ -33,7 +33,7 @@ def test_sanity():
     expected_custom_args = {'custom_arg_1': 'custom_arg_value_1'}
     expected_body_args = {'body_arg_1': 'body_arg_value_1'}
     expected_request_args = {'request_arg_1': 'request_arg_value_1'}
-    assert p.parsed_arguments == CommandArguments(url_args=expected_url_args, custom_args=expected_custom_args,
+    assert p._parsed_arguments == ParsedArguments(url_args=expected_url_args, custom_args=expected_custom_args,
                                                   request_args=expected_request_args, body_args=expected_body_args)
     assert p._pre_process_code == DEFAULT_PRE_PROCESS
     assert p._post_process_code == DEFAULT_POST_PROCESS
@@ -83,14 +83,14 @@ def test_sanity():
     expected_custom_args = {'custom_arg_1': 'custom_arg_value_1'}
     expected_body_args = {'body_arg_1': 'body_arg_value_1'}
     expected_request_args = {'request_arg_1': 'request_arg_value_1'}
-    assert p.parsed_arguments == CommandArguments(url_args=expected_url_args, custom_args=expected_custom_args,
+    assert p._parsed_arguments == ParsedArguments(url_args=expected_url_args, custom_args=expected_custom_args,
                                                   request_args=expected_request_args, body_args=expected_body_args)
     assert p._pre_process_code == DEFAULT_PRE_PROCESS
     assert p._post_process_code == DEFAULT_POST_PROCESS
     assert p.context_key == 'context_key'
     # try to instantiate
-    assert p.pre_processor([])
-    assert p.post_processor()
+    assert p.pre_processor
+    assert p.post_processor
 
 
 def test_basic_authentication():

@@ -1,24 +1,17 @@
-from pathlib import Path
-
-import typer
-
-from . import PreProcess, PostProcess, ApiCall, Runner
+# todo jochman fix all imports
+from hack_stop_code.caller.Parser import Parser
+from hack_stop_code.caller.runner import Runner
 
 
-def main(
-        args_path: Path = typer.Argument(..., file_okay=True, resolve_path=True, readable=True),
-        params_path: Path = typer.Argument(..., file_okay=True, resolve_path=True, readable=True)
-):
-    args = load_json(args_path)
-    params = load_json(params_path)
+def main():
+    # Initialization
+    parser = Parser(params=demisto.params(), args=demisto.args())
+    pre_processor = parser.pre_processor
+    post_processor = parser.post_processor
 
-    pre_processor = PreProcess(args)
-    post_processor = PostProcess()
-
-    api_call = ApiCall(params)
-    runner = Runner(pre_processor, api_call, post_processor)
-    print(runner.run(args))
-
+    # Calling
+    runner = Runner(pre_processor, post_processor)
+    runner.run()
 
 if __name__ == '__main__':
-    typer.run(main)
+    main()

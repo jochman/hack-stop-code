@@ -1,4 +1,9 @@
+from pathlib import Path
+from typing import Union
+
+
 class Constants:
+    body = 'body'
     auth_custom = 'auth_custom'
     auth_format = 'auth_format'
     auth_header_key = 'Authorization'
@@ -16,3 +21,8 @@ class Constants:
     base_url = 'base_url'
     insecure = 'insecure'
     proxy = 'proxy'
+
+
+def load_json(path: Union[str, Path]):
+    with Path(path).open() as f:
+        return load_json(f)
