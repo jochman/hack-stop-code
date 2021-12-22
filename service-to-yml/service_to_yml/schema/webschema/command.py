@@ -10,3 +10,5 @@ class Command(BaseModel):
     params: list[Param] = []
     headers: list[Param] = []
     body: Optional[str]
+    pre_process: str
+    post_process: str
