@@ -8,8 +8,8 @@ class Constants:
     auth_format = 'auth_format'
     authentication_type = '_auth_type'
     auth_header_key = 'Authorization'
-    password_placeholder = '<password>'
-    username_placeholder = '<username>'
+    password_placeholder = ':password'
+    username_placeholder = ':username'
     auth_bearer = 'Bearer'
     auth_basic = 'Basic'
     auth_none = 'None'
@@ -163,7 +163,7 @@ class Parser:
     def _parse_replace_suffix(self, args):  # call after calling parse_special_args()
         suffix = args.get(Constants.suffix)
         for k, v in self._parsed_arguments.path_args.items():
-            suffix = suffix.replace(f'<{k}>', v)
+            suffix = suffix.replace(f':{k}', v)
         return suffix
 
     @staticmethod
