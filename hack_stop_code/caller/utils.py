@@ -1,4 +1,6 @@
 class Constants:
+    auth_custom = 'auth_custom'
+    auth_format = 'auth_format'
     auth_header_key = 'Authorization'
     password_placeholder = '<password>'
     username_placeholder = '<username>'

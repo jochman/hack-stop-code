@@ -44,7 +44,7 @@ class Parser:
         self.context_key = args.get(Constants.context_key)
         self.parsed_arguments = self.parse_special_args(args)
 
-        self.auth_format = params.get('auth_format')
+        self.auth_format = params.get(Constants.auth_format)
         self.authentication_type = self._parse_authentication_type(params)
 
         self.headers = Parser._extract_headers(args) | Parser._extract_headers(params) | self.generate_auth_header()
@@ -56,8 +56,7 @@ class Parser:
         self.post_process_result = exec(self._post_process_code, globals())
 
     def generate_auth_header(self):
-        auth_format = self.auth_format
-
+        auth_format = None
         username = self._params.get('credentials', {}).get('username', '')
         password = self._params.get('credentials', {}).get('password', '')
 
@@ -65,13 +64,13 @@ class Parser:
             return dict()
 
         elif self.authentication_type == AuthenticationType.Basic:
-            auth_format = auth_format or f'Basic {Constants.username_placeholder}:{Constants.password_placeholder}'
+            auth_format = f'Basic {Constants.username_placeholder}:{Constants.password_placeholder}'
 
         elif self.authentication_type == AuthenticationType.Bearer:
-            auth_format = auth_format or f'Bearer {Constants.password_placeholder}'
+            auth_format = f'Bearer {Constants.password_placeholder}'
 
         elif self.authentication_type == AuthenticationType.Custom:
-            pass  # uses auth_format
+            auth_format = self.auth_format
 
         if not auth_format:
             raise ValueError(f"Empty auth_format, auth type={self.authentication_type}")
@@ -88,8 +87,10 @@ class Parser:
 
         string_to_type = {Constants.auth_basic: AuthenticationType.Basic,
                           Constants.auth_bearer: AuthenticationType.Bearer,
-                          Constants.auth_none: AuthenticationType.NoAuth}
-        return string_to_type.get(raw_authentication_type)
+                          Constants.auth_none: AuthenticationType.NoAuth,
+                          Constants.auth_custom: AuthenticationType.Custom}
+
+        return string_to_type[raw_authentication_type]
 
     def _parse_replace_suffix(self, args):  # call after calling parse_special_args()
         suffix = args.get(Constants.suffix)
