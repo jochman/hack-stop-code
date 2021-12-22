@@ -10,7 +10,7 @@ def test_sanity():
         Constants.method: 'GET',
         Constants.suffix: 'ip',
         Constants.context_key: 'context_key',
-        'headers:accept': 'json/application',
+        'header:accept': 'json/application',
         f'{Prefixes.body_arg}:body_arg_1': 'body_arg_value_1',
         f'{Prefixes.url_arg}:url_arg_1': 'url_arg_value_1',
         f'{Prefixes.custom_arg}:custom_arg_1': 'custom_arg_value_1',
@@ -25,7 +25,7 @@ def test_sanity():
     p = Parser(params=params, args=args)
     assert p.suffix == 'ip'
     assert p.method == 'GET'
-    assert p.headers == {'Authorization': 'Bearer my_secret_key'}
+    assert p.headers == {'Authorization': 'Bearer my_secret_key', 'accept': 'json/application'}
     expected_url_args = {'url_arg_1': 'url_arg_value_1'}
     expected_custom_args = {'custom_arg_1': 'custom_arg_value_1'}
     expected_body_args = {'body_arg_1': 'body_arg_value_1'}
