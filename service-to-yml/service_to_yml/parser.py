@@ -1,3 +1,4 @@
+from typing_extensions import Required
 from schema import WebSchema, Demisto
 import logging
 import re
@@ -51,20 +52,38 @@ class Parser:
         self, conf: WebSchema.Configuration
     ):
         params: list[Demisto.Configuration] = list()
+        print(conf.base_url)
         params.extend(
-            [Demisto.Configuration(
+            [
+                Demisto.Configuration(
                 name='base_url',
                 display='Base URL',
-                defaultValue=conf.base_url,
-                hidden=True,
+                defaultvalue=conf.base_url,
+                hidden=False,
                 required=True
             ),
                 Demisto.Configuration(
                 name='context_key',
                 display='Context Key',
-                defaultValue=conf.context_key,
-                hidden=True,
+                defaultvalue=conf.context_key,
+                hidden=False,
                 required=True
+            ),
+            Demisto.Configuration(
+                name='insecure',
+                display='Insecure',
+                defaultvalue=conf.insecure if conf.insecure else False,
+                hidden=False,
+                required=False,
+                type=8
+            ),
+            Demisto.Configuration(
+                name='proxy',
+                display='Use proxy',
+                defaultvalue=conf.proxy if conf.proxy else False,
+                hidden=False,
+                required=False,
+                type=8
             )
             ]
         )
@@ -117,7 +136,8 @@ class Parser:
                 .replace(' ', '-')
                 .replace('/', '-')
                 .replace('--', '-')
-                .replace(':', ''),
+                .replace(':', '')
+                .strip('-'),
                 arguments=arguments,
             )
             new_commands.append(cmd)

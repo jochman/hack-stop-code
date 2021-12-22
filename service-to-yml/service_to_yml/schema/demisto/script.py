@@ -4,11 +4,13 @@ from pydantic import BaseModel, Field
 
 from .command import Command
 
+code = open('unified.py').read(
 
+)
 class Script(BaseModel):
-    script: Optional[str] = ''
+    script: Optional[str] = code
     type: str = 'python'
-    dockerimage: str = 'demisto/python3'
+    dockerimage: str = 'demisto/python3:3.9.7.24076'
     dockerimage45: Optional[str]
     alt_dockerimages: Optional[str]
     isfetch: bool = False
