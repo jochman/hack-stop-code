@@ -15,7 +15,7 @@ class Prefixes:
     body_arg = '_body_arg'
     custom_arg = '_custom_arg'
     path_param = '_path_param'
-    request_arg = '_request_arg'  # todo jochman
+    request_arg = '_request_arg'
 
     header = '_header'
     authorization = 'authorization'
@@ -70,7 +70,6 @@ class Parser:
     def generate_auth_header(self):
         auth_format = self._params.get(Constants.auth_format)
         authentication_type = self._parse_authentication_type(self._params)
-
 
         if auth_format and authentication_type != AuthenticationType.Custom:
             raise ValueError(f"Cannot have auth format with a non-custom authentication type {authentication_type}")
