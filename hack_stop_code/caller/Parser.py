@@ -78,14 +78,11 @@ class Parser:
         if self.authentication_type == AuthenticationType.NoAuth:
             return dict()
 
-        elif self.authentication_type == AuthenticationType.Basic:
-            auth_format = f'Basic {Constants.username_placeholder}:{Constants.password_placeholder}'
-
-        elif self.authentication_type == AuthenticationType.Bearer:
-            auth_format = f'Bearer {Constants.password_placeholder}'
-
-        elif self.authentication_type == AuthenticationType.Custom:
-            auth_format = self.auth_format
+        auth_format = {
+            AuthenticationType.Basic: f'Basic {Constants.username_placeholder}:{Constants.password_placeholder}',
+            AuthenticationType.Bearer: f'Bearer {Constants.password_placeholder}',
+            AuthenticationType.Custom: self.auth_format
+        }[self.authentication_type]
 
         if not auth_format:
             raise ValueError(f"Empty auth_format, auth type={self.authentication_type}")
