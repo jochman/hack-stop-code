@@ -1,65 +1,55 @@
 commonfields:
-  id: ipinfo_v5
+  id: IpInfoGenraterkdsajik
   version: -1
-vcShouldKeepItemLegacyProdMachine: false
-name: ipinfo_v5
-display: IPinfo v5
-category: Data Enrichment & Threat Intelligence
-description: Use the IPinfo.io API to get data about an IP address.
+name: IpInfoGenraterkdsajik
+display: IpInfoGenraterkdsajik
+deprecated: false
+beta: false
+category: Endpoint
+fromversion: 6.5.0
+toversion: null
+image: null
+description: ""
+defaultmapperin: null
+defaultmapperout: null
+defaultclassifier: null
+detaileddescription: ""
+autoconfiginstance: false
 configuration:
-- display: API token
-  displaypassword: API Token
-  name: credentials
-  type: 9
-  required: false
-  hiddenusername: true
-  additionalinfo: The API key to use for the connection.
-- display: Source Reliability
-  name: integrationReliability
-  defaultvalue: C - Fairly reliable
-  type: 15
-  required: true
-  options:
-  - A+ - 3rd party enrichment
-  - A - Completely reliable
-  - B - Usually reliable
-  - C - Fairly reliable
-  - D - Not usually reliable
-  - E - Unreliable
-  - F - Reliability cannot be judged
-  additionalinfo: Reliability of the source providing the intelligence data.
-- display: Base URL
-  name: base_url
-  defaultvalue: https://ipinfo.io
-  type: 0
-  required: true
-- display: Base URL
-  name: _headers:header1
-  defaultvalue: example1
-  type: 0
-  required: false
-  hidden: true
-- display: Trust any certificate (not secure)
-  name: insecure
-  type: 8
-  required: false
-- display: Authentication type
-  name: _authentication_type
-  type: 15
-  required: true
-  options:
-  - Basic
-  - Bearer
-  - None
-- display: Use system proxy settings
-  name: proxy
-  type: 8
-  required: false
+  - display: Base URL
+    defaultvalue: https://ipinfo.io
+    name: base_url
+    type: 0
+    required: true
+    hidden: false
+    additionalinfo: ""
+  - display: Context Key
+    defaultvalue: IPInfo
+    name: context_key
+    type: 0
+    required: true
+    hidden: false
+    additionalinfo: ""
+  - display: Insecure
+    defaultvalue: false
+    name: insecure
+    type: 8
+    required: false
+    hidden: false
+    additionalinfo: ""
+  - display: Use proxy
+    defaultvalue: false
+    name: proxy
+    type: 8
+    required: false
+    hidden: false
+    additionalinfo: ""
 script:
-  script: |-
+  script: >
     from pathlib import Path
 
     from typing import Union
+
 
 
     class Constants:
@@ -68,8 +58,8 @@ script:
         auth_format = 'auth_format'
         authentication_type = '_auth_type'
         auth_header_key = 'Authorization'
-        password_placeholder = '<password>'
-        username_placeholder = '<username>'
+        password_placeholder = ':password'
+        username_placeholder = ':username'
         auth_bearer = 'Bearer'
         auth_basic = 'Basic'
         auth_none = 'None'
@@ -83,18 +73,20 @@ script:
         proxy = 'proxy'
 
 
+    from enum import Enum, auto
+
+
+
     def load_json(path: Union[str, Path]):
         with Path(path).open() as f:
             return load_json(f)
 
 
-
-    from enum import Enum, auto
-
     from typing import NamedTuple
 
 
     DEFAULT_POST_PROCESS = '''import requests
+
 
 
     class PostProcess:
@@ -106,7 +98,9 @@ script:
                                   outputs=json,
                                   raw_response=json)
     '''
+
     DEFAULT_PRE_PROCESS = '''
+
 
     class PreProcess:
         def __init__(self, args: ParsedArguments) -> None:
@@ -117,6 +111,7 @@ script:
             # (the ParsedArguments object is immutable, but its members are mutable)
             return self._args
     '''
+
 
 
     class Prefixes:
@@ -181,7 +176,6 @@ script:
             auth_format = self._params.get(Constants.auth_format)
             authentication_type = self._parse_authentication_type(self._params)
 
-
             if auth_format and authentication_type != AuthenticationType.Custom:
                 raise ValueError(f"Cannot have auth format with a non-custom authentication type {authentication_type}")
 
@@ -224,7 +218,7 @@ script:
         def _parse_replace_suffix(self, args):  # call after calling parse_special_args()
             suffix = args.get(Constants.suffix)
             for k, v in self._parsed_arguments.path_args.items():
-                suffix = suffix.replace(f'<{k}>', v)
+                suffix = suffix.replace(f':{k}', v)
             return suffix
 
         @staticmethod
@@ -267,6 +261,8 @@ script:
             # If necessary, change self._args
             # (the ParsedArguments object is immutable, but its members are mutable)
             return self._args
+
+
     class ApiCall:
         @staticmethod
         def __call__(method: str,
@@ -282,6 +278,7 @@ script:
     import requests
 
 
+
     class PostProcess:
         @staticmethod
         def post_process(response: requests.Response) -> CommandResults:
@@ -291,7 +288,9 @@ script:
                                   outputs=json,
                                   raw_response=json)
 
+
     from urllib.parse import urljoin
+
 
 
     class Runner:
@@ -310,37 +309,96 @@ script:
                 proxy=self.parser.proxy,
                 params=args.request_args
             )
+
             return self.parser.post_processor.post_process(raw_response)
 
 
     runner = Runner()
-    results = runner.run()
-    return_results(results)
 
+    results = runner.run()
+
+    return_results(results)
   type: python
-  commands:
-  - name: ip
-    arguments:
-    - name: _path_param:ip
-      required: true
-      default: true
-      description: IP address to query, e.g., 1.1.1.1.
-    - name: _request_param:foo
-      description: example request arg
-    - name: suffix
-      required: true
-      description: suffix
-      defaultValue: <ip>
-    - name: header:Accept
-      required: true
-      description: accept json
-      defaultValue: application/json
-    - name: method
-      required: true
-      description: http method
-      defaultValue: GET
-    description: Check IP reputation (when information is available, returns a JSON
-      with details). Uses all configured Threat Intelligence feeds.
   dockerimage: demisto/python3:3.9.7.24076
+  dockerimage45: null
+  alt_dockerimages: null
+  isfetch: false
+  longRunning: false
+  longRunningPort: null
+  ismappable: false
+  isremotesyncin: false
+  isremotesyncout: false
+  commands:
+    - name: ipinfogenraterkdsajik-get-ip
+      execution: false
+      description: ""
+      deprecated: false
+      system: false
+      arguments:
+        - name: method
+          required: false
+          default: false
+          description: ""
+          auto: null
+          predefined: []
+          isArray: false
+          defaultValue: GET
+          secret: false
+          deprecated: false
+        - name: suffix
+          required: false
+          default: false
+          description: ""
+          auto: null
+          predefined: []
+          isArray: false
+          defaultValue: :ip
+          secret: false
+          deprecated: false
+        - name: _pre_process
+          required: false
+          default: false
+          description: ""
+          auto: null
+          predefined: []
+          isArray: false
+          defaultValue: null
+          secret: false
+          deprecated: false
+        - name: _post_process
+          required: false
+          default: false
+          description: ""
+          auto: null
+          predefined: []
+          isArray: false
+          defaultValue: null
+          secret: false
+          deprecated: false
+        - name: _path_param:ip
+          required: true
+          default: false
+          description: ""
+          auto: null
+          predefined: []
+          isArray: false
+          defaultValue: ""
+          secret: false
+          deprecated: false
+      outputs: []
+      timeout: null
+      hidden: false
+      polling: false
   runonce: false
   subtype: python3
+  feed: false
+  isFetchSamples: false
+  resetContext: false
+system: false
+hidden: false
+versionedfields: ""
+defaultEnabled: false
+tests:
+  - no tests
+scriptNotVisible: false
+autoUpdateDockerImage: true

@@ -1,13 +1,12 @@
 from urllib.parse import urljoin
 
-import demistomock as demisto  # todo remove
 from api_call import ApiCall
 from hack_stop_code.caller.Parser import Parser
 
 
 class Runner:
-    def __init__(self):
-        self.parser = Parser(params=demisto.params(), args=demisto.args())
+    def __init__(self, params, args):
+        self.parser = Parser(params=params, args=args)
 
     def run(self):
         args = self.parser.pre_processor.get_preprocessed_args()
