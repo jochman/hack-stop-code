@@ -1,9 +1,5 @@
-from typing_extensions import Required
 from schema import WebSchema, Demisto
-import logging
 import re
-
-logger = logging.getLogger('')
 
 
 class Parser:
@@ -136,8 +132,7 @@ class Parser:
                 .replace(' ', '-')
                 .replace('/', '-')
                 .replace('--', '-')
-                .replace(':', '')
-                .strip('-'),
+                .replace(':', ''),
                 arguments=arguments,
             )
             new_commands.append(cmd)

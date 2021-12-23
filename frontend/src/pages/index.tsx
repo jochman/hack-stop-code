@@ -7,11 +7,9 @@ import {
   makeStyles,
   Typography,
 
-
 } from '@material-ui/core';
 import { Field, FieldArray, Form, Formik } from 'formik';
 import { CheckboxWithLabel, TextField } from 'formik-material-ui';
-import React, { Children, Component } from 'react';
 
 import { Integartion } from '../schema/integration';
 import { Command } from '../schema/command';
@@ -19,8 +17,7 @@ import { Param } from '../schema/param';
 import axios from 'axios';
 import YAML from 'yaml'
 import fileDownload from 'js-file-download'
-
-
+import React from 'react';
 
 
 const emptyParam: Param =
@@ -336,7 +333,6 @@ export default function Home() {
                                 </React.Fragment>
                               )}
                             </FieldArray>
-
                             <FieldArray name={`commands.[${index}].headers`}>
                               {({ push, remove }) => (
                                 <React.Fragment>
